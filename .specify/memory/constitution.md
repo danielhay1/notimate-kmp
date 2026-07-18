@@ -50,6 +50,15 @@ NotiMate turns transient mobile notifications into structured, private, useful a
 - Do not test UI. Test business logic, agent policy, mappers, validation, redaction, and persistence decisions.
 - Do not over-test framework or library behavior.
 
+## Workflow Principles
+
+- Start implementation work only after a short user-approved Git plan.
+- After plan approval, provide a high-level branch/merge diagram and the command list before code changes.
+- Keep each feature or bug fix isolated on its own branch.
+- Use `feature/<short-kebab-name>` for feature branches and `bug/<short-kebab-name>` for bug branches.
+- Prefer `main -> dev -> feature/*` or `main -> dev -> bug/*`; pull requests merge back into the correct base branch after user review.
+- For long-running or high-effort work, split research, implementation, review, and validation across workflows or multiple agents when useful.
+
 ## Reliability Principles
 
 - Treat OEM battery restrictions as a first-class Android risk.

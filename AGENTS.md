@@ -45,6 +45,25 @@ Plan code to be testable through pure logic, injected dependencies, and determin
 
 ## Commit & Pull Request Guidelines
 
+Before implementation work, provide a short Git plan for the feature or bug fix and wait for user approval. After approval, provide a short high-level branch/merge diagram plus the exact command list before changing code.
+
+Use isolated branches for implementation work:
+
+```text
+main
+  dev
+    feature/<short-kebab-name>
+    bug/<short-kebab-name>
+```
+
+Default branch flow:
+
+1. Determine whether the work is a feature or bug and propose `feature/<name>` or `bug/<name>`.
+2. Create and check out the new branch before implementation starts.
+3. Validate that all work happens on the intended branch and remains isolated from unrelated changes.
+4. After validation, open a pull request into the correct base branch and give the user the PR link for review.
+5. Merge only after user approval.
+
 Use Conventional Commits:
 
 - `chore(kmp): initialize NotiMate app scaffold`
@@ -57,6 +76,8 @@ Pull requests should include a summary, validation commands, linked task/spec, a
 ## Spec-Driven Development
 
 Before implementing features, read `.specify/memory/constitution.md` and the relevant `specs/<number>-<feature>/` files. Keep `spec.md`, `plan.md`, and `tasks.md` aligned as decisions change.
+
+For long-running or high-effort work, use workflows or multiple agents to split research, implementation, review, and validation. If the scope is unclear, ask the user whether to use a workflow before starting.
 
 ## Security & Privacy
 
