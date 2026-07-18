@@ -32,12 +32,23 @@ NotiMate turns transient mobile notifications into structured, private, useful a
 - `:shared` owns shared UI, domain models, parsing contracts, routing rules, extraction schemas, privacy policies, and shared tests.
 - `:androidApp` owns Android app shell, manifest, permissions, `NotificationListenerService`, WorkManager, local providers, and lifecycle behavior.
 - `iosApp/` owns the Xcode shell and iOS hosting code.
+- Prefer modern Kotlin, Compose Multiplatform, Compose, AndroidX, and coroutine APIs for implementation decisions.
+- Use MVVM as the default application architecture: composables render state, ViewModels or shared state holders coordinate actions, and repositories own durable truth.
 - Keep platform APIs out of `commonMain`.
 - Prefer interfaces plus injected platform implementations over premature `expect`/`actual`.
+- Prefer constructor injection and dependency-injection-friendly package structure over service locators or hidden global state.
 - Repositories expose domain models, not DTOs or database entities.
 - Composables render immutable state only; state holders coordinate actions and state.
 - Platform entry points delegate quickly; services, activities, and workers must not become business-logic containers.
 - Durable source of truth belongs in repositories/persistence, not UI or Android services.
+- Choose local storage deliberately: Room for relational/queryable durable records, DataStore or platform settings for simple preferences, encrypted platform storage for secrets, and short-lived encrypted queues only when notification payloads must temporarily survive process death.
+
+## Testability Principles
+
+- Design code for testability with pure functions, injected dependencies, stable clocks/dispatchers, and deterministic state transitions.
+- Mirror implementation paths in test source sets and use a `Test` filename suffix.
+- Do not test UI. Test business logic, agent policy, mappers, validation, redaction, and persistence decisions.
+- Do not over-test framework or library behavior.
 
 ## Reliability Principles
 

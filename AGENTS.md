@@ -33,11 +33,15 @@ Follow official Kotlin style, Google Android conventions, and existing Compose M
 - ViewModels: `SomethingViewModel`.
 - UI state/actions/effects: `SomethingUiState`, `SomethingAction`, `SomethingEffect`.
 
-Prefer immutable state, constructor injection, explicit nullability, and unidirectional data flow. Do not expose mutable flows outside their owner.
+Prefer modern Kotlin, Compose Multiplatform, and AndroidX APIs for UI, concurrency, lifecycle, and state. Use MVVM as the default feature shape: ViewModels or shared state holders expose immutable UI state and receive actions from composables. Prefer constructor injection and dependency-injection-friendly structure, with interfaces at module boundaries and implementations in platform-specific or data packages. Do not expose mutable flows outside their owner.
+
+Evaluate persistence per data type before choosing storage. Use modern KMP/CMP-friendly storage where possible; choose Room for relational/queryable durable data, DataStore or platform settings for simple preferences, and encrypted platform storage for secrets or sensitive tokens. Keep raw notification bodies out of durable storage.
 
 ## Testing Guidelines
 
-Place platform-neutral tests in `shared/src/commonTest`. Use Android host tests for Android-specific shared behavior and iOS tests for iOS-specific shared behavior. Use synthetic notification payloads only; never commit real notification text, MFA codes, financial balances, or message content.
+Place platform-neutral tests in `shared/src/commonTest`. Use Android host tests for Android-specific behavior and iOS tests only for iOS-specific shared behavior. Mirror implementation package paths in tests and use the same filename suffix, for example `shared/src/commonMain/domain/AgentPolicy.kt` -> `shared/src/commonTest/domain/AgentPolicyTest.kt`.
+
+Plan code to be testable through pure logic, injected dependencies, and deterministic state transitions. Do not test UI in this project. Test business logic, policy decisions, mappers, validation, and privacy behavior; avoid over-testing library behavior or Compose/Android framework functions. Use synthetic notification payloads only; never commit real notification text, MFA codes, financial balances, or message content.
 
 ## Commit & Pull Request Guidelines
 

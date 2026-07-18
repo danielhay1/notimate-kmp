@@ -13,6 +13,7 @@ The notification agent is a local policy engine. Its job is to decide, on device
   - classification and extraction result contracts.
   - agent policy rules and action confidence thresholds.
   - privacy redaction rules.
+  - MVVM state contracts and testable shared state holders.
   - action draft models.
   - shared UI state contracts when cross-platform.
 - `shared/src/androidMain`
@@ -61,6 +62,7 @@ Extractor implementations return strict sealed results. They do not execute side
 - User settings, blocked packages, diagnostics, and action drafts are repository-owned.
 - Raw notification text is not a durable source of truth.
 - Temporary payload handling should be in memory or short-lived encrypted queues only when required for local extraction.
+- Select local storage deliberately: Room for structured action drafts and queryable records, DataStore or platform settings for lightweight preferences, and encrypted platform storage for secrets or sensitive credentials.
 - UI state is derived from repository/domain state and must not own durable processing truth.
 
 ## Testing Strategy
@@ -69,6 +71,9 @@ Extractor implementations return strict sealed results. They do not execute side
 - Common tests for agent policy decisions and autonomy-level routing.
 - Android tests for notification mapping, listener diagnostics, WorkManager behavior, and provider writes.
 - iOS tests only for actual iOS-specific shared behavior.
+- Mirror implementation paths in tests and name files with the same subject plus `Test`, for example `AgentPolicy.kt` and `AgentPolicyTest.kt`.
+- Do not add UI tests for the MVP. Keep tests focused on logic, business rules, mappers, validation, persistence choices, and privacy behavior.
+- Avoid testing framework/library behavior directly.
 
 ## Open Decisions
 
