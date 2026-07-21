@@ -8,6 +8,9 @@ NotiMate turns transient mobile notifications into structured, private, useful a
 
 - Raw notification payloads stay on device.
 - Logs, analytics, crash reports, screenshots, and tests must not contain notification bodies, MFA codes, financial balances, personal messages, or other sensitive payload data.
+- API keys, tokens, credentials, signing secrets, and other sensitive values must not be embedded in source code, tests, specs, screenshots, or committed configuration.
+- Secrets must use structured safe configuration: Gradle properties or environment variables for build-time values, Android Keystore or encrypted storage for runtime secrets, and ignored local files for developer-only values.
+- Documentation may mention required secrets by placeholder name only.
 - Cloud processing must not receive raw notification text. Future cloud features may receive only minimized structured data with explicit user consent.
 - Test fixtures and demos must use synthetic notification content.
 

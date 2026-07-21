@@ -83,6 +83,8 @@ For long-running or high-effort work, use workflows or multiple agents to split 
 
 Raw notification payloads must stay on device. Do not log, persist, upload, or include sensitive notification bodies in tests, screenshots, analytics, or crash reports.
 
+Do not embed API keys, tokens, credentials, signing secrets, or other sensitive values in source code, tests, specs, screenshots, or committed configuration. Use structured platform-safe configuration: Gradle properties or environment variables for build-time values, Android Keystore or encrypted storage for runtime secrets, and local ignored files for developer-only values. Document required keys with placeholder names only.
+
 ## Notification Agent Architecture
 
 Treat the NotiMate agent as a local policy engine for received notifications. Prefer this flow:
