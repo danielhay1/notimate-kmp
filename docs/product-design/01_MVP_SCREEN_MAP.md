@@ -11,7 +11,7 @@ Today | Automations | Activity
 
 Settings opens from the top app bar and is not a fourth primary destination.
 
-The active Mode is visible from Today and Automations. Mode management is part of Automations, not the Account screen.
+The active Profile is visible from Today and Automations. Profile management is part of Automations, not the Account screen.
 
 ## Screen hierarchy
 
@@ -27,27 +27,27 @@ Launch
 │   ├── Proposal alerts education
 │   ├── Android POST_NOTIFICATIONS permission
 │   ├── On-device AI readiness
-│   ├── Starter Mode
+│   ├── Starter Profile
 │   └── Setup complete
 │
 └── Main application
     ├── Today
     │   ├── Processing status
-    │   ├── Active Mode switcher
+    │   ├── Active Profile switcher
     │   ├── Proposal queue
     │   ├── Recent outcomes
     │   └── Proposal Detail
     │
     ├── Automations
-    │   ├── Active Mode summary
+    │   ├── Active Profile summary
     │   ├── Automation list
     │   ├── Automation Detail
     │   ├── Create/Edit Automation
     │   ├── Describe an Automation
     │   ├── Automation Review
-    │   ├── Mode quick switcher
-    │   ├── Manage Modes
-    │   └── Mode Detail
+    │   ├── Profile quick switcher
+    │   ├── Manage Profiles
+    │   └── Profile Detail
     │
     ├── Activity
     │   ├── Structured activity timeline
@@ -146,12 +146,12 @@ States:
 
 Do not present unsupported AI as a setup failure. Explain which NotiMate features remain available.
 
-### Starter Mode
+### Starter Profile
 
 Default:
 
 ```text
-Personal Mode
+Personal Profile
 
 - Suggest possible calendar events
 - Keep important alerts visible
@@ -159,7 +159,7 @@ Personal Mode
 - Always ask before external actions
 ```
 
-Primary action: `Use Personal Mode`
+Primary action: `Use Personal Profile`
 Secondary action: `Customize`
 
 ### Optional account prompt
@@ -179,7 +179,7 @@ The screen must state exactly what is and is not synced.
 Required regions:
 
 1. Processing state.
-2. Active Mode chip.
+2. Active Profile chip.
 3. Proposals requiring attention.
 4. Recent safe outcomes.
 5. Privacy reassurance or degraded-state explanation.
@@ -190,7 +190,7 @@ Example:
 
 ```text
 NotiMate is active
-[Personal Mode ▾]
+[Personal Profile ▾]
 
 Needs your review
 - Possible calendar event
@@ -206,7 +206,7 @@ Calendar proposal fields:
 
 - Proposal type.
 - Source application.
-- Originating Mode and Automation.
+- Originating Profile and Automation.
 - Editable title.
 - Editable date.
 - Editable start and end time.
@@ -225,12 +225,12 @@ The final event save occurs in the Calendar application.
 
 Required regions:
 
-- Active Mode name and switch action.
+- Active Profile name and switch action.
 - Number of enabled automations.
 - Enabled and disabled automation list.
 - `Create automation`.
 - `Describe an automation` when local AI supports it.
-- `Manage modes`.
+- `Manage profiles`.
 
 ## Create/Edit Automation
 
@@ -248,22 +248,22 @@ The final review must present the automation as a readable sentence:
 
 > When WhatsApp notifications contain a possible date and time, propose a calendar event and always ask me to review it.
 
-## Manage Modes
+## Manage Profiles
 
 Required behavior:
 
-- Display all Modes.
-- Show which Mode is active.
-- Switch active Mode.
-- Create a Mode.
-- Open Mode Detail.
+- Display all Profiles.
+- Show which Profile is active.
+- Switch active Profile.
+- Create a Profile.
+- Open Profile Detail.
 - Duplicate, rename, and delete through contextual actions.
 
 MVP constraints:
 
-- Exactly one active Mode.
-- The only Mode cannot be deleted.
-- Deleting the active Mode requires selecting a replacement first.
+- Exactly one active Profile.
+- The only Profile cannot be deleted.
+- Deleting the active Profile requires selecting a replacement first.
 - Switching affects new notifications only.
 
 ## Activity
@@ -276,7 +276,7 @@ Displays structured privacy-safe records:
 - Notification ignored by an automation.
 - Processing deferred.
 - Automation enabled or disabled.
-- Mode switched.
+- Profile switched.
 - Permission lost.
 - Local AI unavailable.
 
@@ -319,6 +319,6 @@ The Android shell must be able to open at least:
 
 - Proposal Detail by proposal identifier.
 - Permissions and access.
-- Active Mode Automations.
+- Active Profile Automations.
 
 Notification taps must open the correct destination with a normal application back stack.

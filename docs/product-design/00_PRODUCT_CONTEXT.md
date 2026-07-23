@@ -76,7 +76,7 @@ Local AI is valuable for:
 Local AI is not required for:
 
 - Navigation.
-- Viewing or editing Modes.
+- Viewing or editing Profiles.
 - Enabling or disabling automations.
 - Reviewing a proposal.
 - Dismissing a proposal.
@@ -86,18 +86,18 @@ The MVP must degrade gracefully when on-device generative AI is unavailable, sti
 
 The first conversational feature should be `Describe an automation`, which converts user language into an inspectable automation draft. An open-ended chatbot is not a primary navigation destination.
 
-## Modes and automations
+## Notification Profiles and automations
 
-Every user has one or more NotiMate Modes.
+Every user has one or more NotiMate Notification Profiles.
 
-A Mode is a named collection of automations. Examples:
+A Notification Profile, shown as `Profile` in compact UI, is a named collection of automations. Examples:
 
 - Personal
 - Work
 - Travel
 - Quiet
 
-Exactly one Mode is active in the MVP. Switching Modes affects newly received notifications only. Existing proposals keep the Mode that created them.
+Exactly one Profile is active in the MVP. Switching Profiles affects newly received notifications only. Existing proposals keep the Profile that created them.
 
 Each Automation contains:
 
@@ -107,7 +107,7 @@ Each Automation contains:
 - Confirmation policy: what user review is required.
 - Enabled state.
 
-The product should use `Mode`, `Automation`, `Condition`, `Action`, and `Proposal` in user-facing language. `Filter` and `rule set` are implementation terms and should not become separate user management concepts.
+The product should use `Notification Profile` or compact `Profile`, `Automation`, `Condition`, `Action`, and `Proposal` in user-facing language. `Filter` and `rule set` are implementation terms and should not become separate user management concepts. `Account` is reserved for identity, login, backup, and sync.
 
 ## Account and login posture
 
@@ -116,7 +116,7 @@ Core NotiMate features work without an account.
 Login is optional and contextual. It may be offered for:
 
 - Backing up non-sensitive configuration.
-- Restoring Modes and automations.
+- Restoring Profiles and automations.
 - Future cross-device settings continuity.
 - Future account or subscription management.
 
@@ -131,7 +131,7 @@ Recommended timing:
 
 Allowed for optional sync after explicit opt-in:
 
-- Mode names and appearance.
+- Profile names and appearance.
 - Automation structure.
 - Enabled states.
 - General preferences.
@@ -159,19 +159,19 @@ Free-text matching values may reveal people, organizations, schedules, or privat
 6. Keep external writes user-confirmed.
 7. Prefer visible structured automation over hidden agent behavior.
 8. Make paused, unavailable, and degraded states understandable.
-9. Make every proposal traceable to a Mode and Automation.
+9. Make every proposal traceable to a Profile and Automation.
 10. Avoid notification fatigue through conservative proposal thresholds and user-controlled channels.
 
 ## Out of MVP
 
 - Silent direct calendar writes.
 - Full conversation-history access.
-- Multiple simultaneously active Modes.
-- Automatic Mode switching.
+- Multiple simultaneously active Profiles.
+- Automatic Profile switching.
 - A required account.
 - Cloud notification analysis.
 - General-purpose chatbot navigation.
-- Location-triggered Modes.
+- Location-triggered Profiles.
 - Direct model-to-side-effect execution.
 
 ## Android reference points

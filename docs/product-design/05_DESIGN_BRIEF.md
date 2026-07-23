@@ -37,7 +37,7 @@ Reference selection must cover these journeys rather than copying one entire app
 2. Today dashboard with one or more proposals.
 3. Proposal notification and Proposal Detail.
 4. Calendar event review and handoff.
-5. Mode switching and Mode management.
+5. Profile switching and Profile management.
 6. Structured `when/then` automation builder.
 7. Natural-language automation draft converted to a structured rule.
 8. Activity timeline with privacy-safe outcomes.
@@ -55,7 +55,7 @@ Use official platform patterns first:
 
 Use product references for specific interaction problems:
 
-- Samsung Modes and Routines for Mode selection, templates, and `If/Then` composition.
+- Samsung Modes and Routines for configuration selection, templates, and `If/Then` composition. NotiMate uses Notification Profiles and does not copy Samsung's system Mode concept.
 - Task and calendar products for editable structured proposals.
 - Privacy-focused products for plain-language disclosures.
 - Finance or security products for confidence, review, and confirmation states.
@@ -116,14 +116,14 @@ Semantic meaning must not rely on color alone.
 - Top app bar.
 - Bottom navigation.
 - Back navigation.
-- Mode switcher sheet.
+- Profile switcher sheet.
 - Settings list navigation.
 
 ### Product components
 
 - Processing status banner.
-- Active Mode chip.
-- Mode card and Mode row.
+- Active Profile chip.
+- Profile card and Profile row.
 - Automation row and summary card.
 - `When / Then / Confirm` builder section.
 - Proposal card.
@@ -174,7 +174,7 @@ Visual design is ready for implementation when:
 - The calendar hero flow is represented end to end.
 - Permission denial and revocation states are designed.
 - Proposal notification content and lock-screen-safe content are specified.
-- Mode switching and Mode management are unambiguous.
+- Profile switching and Profile management are unambiguous.
 - Builder states cover structured and AI-assisted entry.
 - English and Hebrew/RTL samples have been checked.
 - Light and dark theme behavior is defined.

@@ -6,7 +6,7 @@ Build the Android-first MVP of NotiMate: an on-device smart notification manager
 
 The preferred agent behavior is local-first: every received notification is minimized, classified, and handled on device whenever possible. The agent should produce validated structured proposals and policy decisions, not free-form autonomous side effects.
 
-The first complete action journey is a calendar-event proposal. Reminders, financial records, additional actions, automatic mode switching, and direct provider writes remain post-MVP candidates.
+The first complete action journey is a calendar-event proposal. Reminders, financial records, additional actions, automatic profile switching, and direct provider writes remain post-MVP candidates.
 
 ## Requirement 1: Permission Onboarding
 
@@ -30,7 +30,7 @@ The first complete action journey is a calendar-event proposal. Reminders, finan
 
 1. Android registers a `NotificationListenerService`.
 2. The service extracts only the minimum fields needed for processing.
-3. The service processes only sources allowed by the user's monitored-source settings and active Mode.
+3. The service processes only sources allowed by the user's monitored-source settings and active Profile.
 4. The service records privacy-safe diagnostics when listener connection changes.
 5. The product does not claim access to full message or conversation history.
 
@@ -68,7 +68,7 @@ The first complete action journey is a calendar-event proposal. Reminders, finan
 ### Acceptance Criteria
 
 1. A possible event can produce a local structured proposal containing editable title, date, time, and location fields.
-2. Proposal Detail identifies the originating source, Mode, and Automation without exposing raw notification history.
+2. Proposal Detail identifies the originating source, Profile, and Automation without exposing raw notification history.
 3. Ambiguous or missing required fields are highlighted for review.
 4. The user can continue to Android Calendar through a pre-filled `ACTION_INSERT` intent.
 5. The MVP does not request direct calendar read/write permission.
@@ -81,7 +81,7 @@ The first complete action journey is a calendar-event proposal. Reminders, finan
 
 ### Acceptance Criteria
 
-1. Today shows processing state, the active Mode, proposals needing attention, and recent privacy-safe outcomes.
+1. Today shows processing state, the active Profile, proposals needing attention, and recent privacy-safe outcomes.
 2. Users can choose monitored notification sources.
 3. Users can inspect structured proposals without exposing raw notification history.
 4. Users can pause notification processing.
@@ -89,21 +89,22 @@ The first complete action journey is a calendar-event proposal. Reminders, finan
 6. The notification body and `Review` action open the specific Proposal Detail destination directly.
 7. An explicit `Dismiss` action rejects the proposal.
 
-## Requirement 7: Modes And Automations
+## Requirement 7: Notification Profiles And Automations
 
-**User story:** As a user, I want to group notification automations into selectable Modes so that I can change how NotiMate behaves.
+**User story:** As a user, I want to group notification automations into selectable Notification Profiles so that I can change how NotiMate behaves.
 
 ### Acceptance Criteria
 
-1. Every local installation has at least one Mode.
-2. Exactly one Mode is active while processing is enabled in the MVP.
-3. A Mode contains one or more user-visible Automations.
+1. Every local installation has at least one Notification Profile.
+2. Exactly one Profile is active while processing is enabled in the MVP.
+3. A Profile contains one or more user-visible Automations.
 4. Each Automation defines sources, conditions, an action, and a confirmation policy.
-5. Switching Modes affects newly received notifications only.
-6. Existing proposals retain their originating Mode and Automation.
-7. Pausing processing does not delete or replace the selected Mode.
-8. Mode management lives under Automations rather than Account settings.
+5. Switching Profiles affects newly received notifications only.
+6. Existing proposals retain their originating Profile and Automation.
+7. Pausing processing does not delete or replace the selected Profile.
+8. Profile management lives under Automations rather than Account settings.
 9. External actions use `Always review` in the MVP.
+10. The implementation model is named `AutomationProfile`; `Account` remains reserved for login and sync.
 
 ## Requirement 8: Optional Account And Sync
 
@@ -115,7 +116,7 @@ The first complete action journey is a calendar-event proposal. Reminders, finan
 2. Sign-in is offered contextually for backup and sync, not as an onboarding gate.
 3. Enabling backup requires a separate explicit opt-in after sign-in.
 4. Raw notification content, proposal content, model prompts, and activity history are never synced.
-5. Signing out stops future sync without deleting local Modes and Automations.
+5. Signing out stops future sync without deleting local Profiles and Automations.
 6. Sensitive free-text conditions remain local unless a separately specified client-side encryption design is implemented.
 
 ## Product Design Authority

@@ -8,7 +8,7 @@ Status: Product-level model; implementation mapping comes later
 LocalInstallation
 ├── ProcessingPreference
 ├── MonitoredSources
-├── Modes
+├── Profiles
 │   └── Automations
 │       ├── Sources
 │       ├── Conditions
@@ -21,9 +21,9 @@ OptionalAccount
 └── SyncableConfiguration
 ```
 
-## Mode
+## Notification Profile
 
-A Mode groups automations that should apply together.
+A Notification Profile groups automations that should apply together. Compact UI may use `Profile`; implementation should use `AutomationProfile` to avoid confusing it with an account or Android system profile.
 
 Product fields:
 
@@ -38,11 +38,11 @@ Product fields:
 
 MVP invariant:
 
-- At least one Mode exists.
-- Exactly one Mode is active while processing is enabled.
-- Pausing processing does not deactivate or delete the selected Mode.
+- At least one Profile exists.
+- Exactly one Profile is active while processing is enabled.
+- Pausing processing does not deactivate or delete the selected Profile.
 
-Starter Mode:
+Starter Profile:
 
 - Name: `Personal`
 - Calendar-event suggestions enabled.
@@ -55,7 +55,7 @@ An Automation is one understandable `when this, then propose that` behavior.
 Product fields:
 
 - Identifier.
-- Owning Mode.
+- Owning Profile.
 - Name.
 - Enabled state.
 - Sources.
@@ -68,7 +68,7 @@ Product fields:
 
 MVP constraint:
 
-An Automation belongs to one Mode. Reusable shared Automations may be introduced later through duplication or templates.
+An Automation belongs to one Profile. Reusable shared Automations may be introduced later through duplication or templates.
 
 ## Source
 
@@ -127,7 +127,7 @@ Product fields:
 
 - Identifier.
 - Proposal type.
-- Originating Mode identifier and display name.
+- Originating Profile identifier and display name.
 - Originating Automation identifier and display name.
 - Source application identifier and display name.
 - Structured editable fields.
@@ -148,7 +148,7 @@ Examples:
 - `Proposal dismissed`
 - `Opened in Calendar`
 - `Ignored by Reduce promotions`
-- `Work Mode activated`
+- `Work Profile activated`
 - `Notification Access lost`
 
 Activity is local-only in the MVP.
@@ -160,7 +160,7 @@ An Account is not the owner of core local data. It provides optional backup or f
 Signing out:
 
 - Stops future sync.
-- Keeps local Modes and automations.
+- Keeps local Profiles and automations.
 - Does not imply cloud-account deletion.
 
 Deleting cloud account data and clearing local data are separate explicit operations.
@@ -171,10 +171,10 @@ Deleting cloud account data and clearing local data are separate explicit operat
 |---|---|
 | Is login required? | No. Core product is local-first and usable without an account. |
 | Where is login shown? | Contextually for backup/sync, preferably after setup or in Settings. |
-| What groups automations? | A user-facing Mode. |
-| How many Modes are active? | Exactly one in the MVP. |
-| Is paused another Mode? | No. Pause is a global processing state. |
-| Where are Modes managed? | Under Automations, not Account/Profile. |
+| What groups automations? | A user-facing Profile. |
+| How many Profiles are active? | Exactly one in the MVP. |
+| Is paused another Profile? | No. Pause is a global processing state. |
+| Where are Profiles managed? | Under Automations, not Account. |
 | Is chat the home screen? | No. Today is proposal-first. |
 | What is the first LLM UI? | Optional natural-language automation drafting. |
 | Can NotiMate read full WhatsApp history? | No. Only notification content/context supplied through Android. |
@@ -194,7 +194,7 @@ These assumptions allow visual design to continue:
 
 - Android is the complete MVP experience.
 - iOS may reuse brand and shared components but cannot provide Android-equivalent cross-app notification listening.
-- Personal Mode is the default starter Mode.
+- Personal Profile is the default starter Profile.
 - Calendar proposal is the hero end-to-end journey.
 - Today, Automations, and Activity are primary navigation destinations.
 - Settings is nested from the app bar.
@@ -205,8 +205,8 @@ These assumptions allow visual design to continue:
 - Final list of post-calendar action types.
 - Whether optional configuration sync ships in the first public MVP.
 - Commercial plan and subscription packaging.
-- Automatic Mode switching after the MVP.
+- Automatic Profile switching after the MVP.
 - Client-side encryption and recovery design for sensitive synced conditions.
 - Exact local AI device support at release time.
 
-These questions may affect later feature screens, but they do not change the foundational navigation, trust model, Mode model, or component system.
+These questions may affect later feature screens, but they do not change the foundational navigation, trust model, Profile model, or component system.

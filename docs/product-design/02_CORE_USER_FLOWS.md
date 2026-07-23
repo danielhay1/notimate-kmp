@@ -17,7 +17,7 @@ Status: Canonical MVP behavior
 11. NotiMate explains proposal alerts.
 12. On Android 13+, NotiMate requests `POST_NOTIFICATIONS`.
 13. NotiMate checks local AI readiness.
-14. User starts with or customizes Personal Mode.
+14. User starts with or customizes Personal Profile.
 15. Setup completes and opens Today.
 
 Alternate outcomes:
@@ -91,30 +91,30 @@ Example language:
 
 Do not expose raw model probability values.
 
-## Flow 6: Switch active Mode
+## Flow 6: Switch active Profile
 
-1. User taps the active Mode chip from Today or Automations.
-2. A Mode switcher sheet lists available Modes.
-3. User selects another Mode.
-4. NotiMate updates the active Mode immediately.
-5. A short confirmation states that the new Mode applies to future notifications.
-6. Existing proposals retain their original Mode and Automation labels.
+1. User taps the active Profile chip from Today or Automations.
+2. A Profile switcher sheet lists available Profiles.
+3. User selects another Profile.
+4. NotiMate updates the active Profile immediately.
+5. A short confirmation states that the new Profile applies to future notifications.
+6. Existing proposals retain their original Profile and Automation labels.
 
-No destructive confirmation dialog is needed for a normal Mode switch.
+No destructive confirmation dialog is needed for a normal Profile switch.
 
-## Flow 7: Manage Modes
+## Flow 7: Manage Profiles
 
 1. User opens Automations.
-2. User chooses `Manage modes`.
-3. Manage Modes shows the active Mode and all alternatives.
-4. User can create, duplicate, rename, reorder, or open a Mode.
-5. Deleting a non-active Mode requires confirmation.
-6. Deleting the active Mode requires selecting a replacement first.
-7. The only remaining Mode cannot be deleted.
+2. User chooses `Manage profiles`.
+3. Manage Profiles shows the active Profile and all alternatives.
+4. User can create, duplicate, rename, reorder, or open a Profile.
+5. Deleting a non-active Profile requires confirmation.
+6. Deleting the active Profile requires selecting a replacement first.
+7. The only remaining Profile cannot be deleted.
 
 ## Flow 8: Create an automation with the structured builder
 
-1. User opens Automations in the intended Mode.
+1. User opens Automations in the intended Profile.
 2. User selects `Create automation`.
 3. User chooses one or more notification sources.
 4. User defines conditions and exclusions.
@@ -123,7 +123,7 @@ No destructive confirmation dialog is needed for a normal Mode switch.
 7. User names the automation.
 8. Review screen shows a readable summary.
 9. User activates the automation.
-10. Automation appears in the Mode.
+10. Automation appears in the Profile.
 
 For the MVP, external actions use `Always review`.
 
@@ -157,7 +157,7 @@ Fallback:
 Signing out:
 
 - Stops future sync.
-- Does not delete local Modes or automations.
+- Does not delete local Profiles or automations.
 - Offers a separate account-data deletion action.
 
 ## Flow 11: Permission revoked
@@ -179,9 +179,9 @@ If proposal notification permission is revoked instead:
 
 1. User pauses NotiMate from Today or Settings.
 2. New notifications are not analyzed.
-3. Active Mode remains selected.
+3. Active Profile remains selected.
 4. Existing proposals remain accessible.
 5. Today shows `Processing paused`.
-6. User resumes without reselecting the Mode.
+6. User resumes without reselecting the Profile.
 
-Pause is global and is not a Mode.
+Pause is global and is not a Profile.

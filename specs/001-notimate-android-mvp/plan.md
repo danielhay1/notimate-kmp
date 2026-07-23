@@ -14,7 +14,7 @@ The notification agent is a local policy engine. Its job is to decide, on device
   - agent policy rules and action confidence thresholds.
   - privacy redaction rules.
   - MVVM state contracts and testable shared state holders.
-  - Mode, Automation, Proposal, and privacy-safe Activity models.
+  - `AutomationProfile`, Automation, Proposal, and privacy-safe Activity models.
   - proposal lifecycle and validation rules.
   - shared UI state contracts when cross-platform.
 - `shared/src/androidMain`
@@ -33,7 +33,7 @@ The notification agent is a local policy engine. Its job is to decide, on device
 
 1. `NotificationListenerService` receives a notification event.
 2. Android mapper converts OS data into a minimized shared `ObservedNotification`.
-3. Repository applies monitored-source and active-Mode policy and stores privacy-safe processing metadata.
+3. Repository applies monitored-source and active-profile policy and stores privacy-safe processing metadata.
 4. Local agent policy checks source, active Automation conditions, sensitivity, device conditions, and user settings.
 5. Classifier routes the event to ignored, possible-calendar-event, unknown, or review-needed.
 6. Deterministic extraction or local model inference runs only when device conditions are safe.
@@ -62,7 +62,7 @@ Extractor implementations return strict sealed results. They do not execute side
 
 ## Source Of Truth
 
-- User settings, monitored sources, Modes, Automations, diagnostics, Proposals, and Activity records are repository-owned.
+- User settings, monitored sources, Profiles, Automations, diagnostics, Proposals, and Activity records are repository-owned.
 - Raw notification text is not a durable source of truth.
 - Temporary raw payload handling stays in memory. Deferred work carries only privacy-safe structured data.
 - Select local storage deliberately: Room for structured proposals and queryable records, DataStore or platform settings for lightweight preferences, and encrypted platform storage for secrets or sensitive credentials.

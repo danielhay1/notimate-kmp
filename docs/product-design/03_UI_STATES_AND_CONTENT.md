@@ -38,7 +38,7 @@ Avoid:
 Meaning: Notification Access is granted and processing is enabled.
 
 Primary message: `NotiMate is active`
-Supporting message: `Using Personal Mode`
+Supporting message: `Using Personal Profile`
 
 ### Paused
 
@@ -123,7 +123,7 @@ Show progress only if the platform reports meaningful progress.
 
 ### Unsupported
 
-`This device does not support the optional on-device model. You can still use Modes and supported automations.`
+`This device does not support the optional on-device model. You can still use Profiles and supported automations.`
 
 ### Temporarily unavailable
 
@@ -201,7 +201,7 @@ Notification body tap and `Review` open the same Proposal Detail destination.
 ### Active with no proposals
 
 Title: `You're all caught up`
-Body: `NotiMate is watching selected apps using Personal Mode.`
+Body: `NotiMate is watching selected apps using Personal Profile.`
 
 ### New user before any observed notification
 
@@ -220,19 +220,19 @@ Title: `Setup is incomplete`
 Body: `Enable Notification Access so NotiMate can analyze new notifications on this device.`
 Action: `Open Android settings`
 
-## Mode states
+## Profile states
 
 - Active.
 - Inactive.
 - Empty.
 - Contains disabled automations only.
-- Cannot delete because it is the only Mode.
+- Cannot delete because it is the only Profile.
 
-Mode switch confirmation:
+Profile switch confirmation:
 
-`Work Mode is now active for new notifications.`
+`Work Profile is now active for new notifications.`
 
-Empty Mode:
+Empty Profile:
 
 Title: `No automations yet`
 Body: `Add an automation or start from a recommended template.`
