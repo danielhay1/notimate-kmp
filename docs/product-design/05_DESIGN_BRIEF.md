@@ -181,9 +181,9 @@ Visual design is ready for implementation when:
 - Component inventory maps every screen to reusable components.
 - Tokens can be translated directly into Compose theme values.
 
-## Next step
+## Reference outcome
 
-Create `06_REFERENCE_SOURCES.md` with a small, curated reference set. For each source, record:
+The curated reference set lives in `06_REFERENCE_SOURCES.md`. For each source, it records:
 
 - Product and screen.
 - URL.
@@ -193,4 +193,4 @@ Create `06_REFERENCE_SOURCES.md` with a small, curated reference set. For each s
 - Platform or licensing notes.
 - Date reviewed.
 
-Then select one coherent visual direction and build the first low-fidelity wireframes before finalizing color and typography.
+Select one coherent visual direction from that document and build the first low-fidelity wireframes before finalizing color and typography.

@@ -13,6 +13,7 @@ This folder resolves the product decisions required before visual-reference sele
 4. `03_UI_STATES_AND_CONTENT.md` — states, empty/error handling, permission states, and product language.
 5. `04_DOMAIN_MODEL_AND_DECISIONS.md` — Notification Profile, Automation, Proposal, Account, and Activity concepts plus resolved decisions.
 6. `05_DESIGN_BRIEF.md` — visual and interaction requirements for the next design-system phase.
+7. `06_REFERENCE_SOURCES.md` — curated platform and product references plus visual-direction candidates.
 
 ## Source of truth
 
@@ -34,10 +35,9 @@ Key reconciliations:
 
 After this foundation is reviewed, create:
 
-1. `06_REFERENCE_SOURCES.md`
-2. `07_VISUAL_DIRECTION.md`
-3. `08_DESIGN_SYSTEM.md`
-4. `09_COMPONENT_INVENTORY.md`
-5. A human-viewable visual preview or Figma library
+1. `07_VISUAL_DIRECTION.md`
+2. `08_DESIGN_SYSTEM.md`
+3. `09_COMPONENT_INVENTORY.md`
+4. A human-viewable visual preview or Figma library
 
 Runtime Compose tokens and components will remain the implementation source of truth in the repository.
