@@ -1,7 +1,7 @@
 # NotiMate Product and Design Foundation
 
 Status: Canonical product-design input
-Last updated: 2026-07-23
+Last updated: 2026-08-21
 
 This folder resolves the product decisions required before visual-reference selection, wireframing, and Compose Multiplatform design-system implementation.
 
@@ -14,6 +14,9 @@ This folder resolves the product decisions required before visual-reference sele
 5. `04_DOMAIN_MODEL_AND_DECISIONS.md` — Notification Profile, Automation, Proposal, Account, and Activity concepts plus resolved decisions.
 6. `05_DESIGN_BRIEF.md` — visual and interaction requirements for the next design-system phase.
 7. `06_REFERENCE_SOURCES.md` — curated platform and product references plus visual-direction candidates.
+8. `07_VISUAL_DIRECTION.md` — approved visual principles and low-fidelity hero-flow wireframes.
+9. `08_DESIGN_SYSTEM.md` — proposed runtime tokens, adaptive rules, accessibility, and resource strategy.
+10. `09_COMPONENT_INVENTORY.md` — reusable product components, screen coverage, states, and platform boundaries.
 
 ## Source of truth
 
@@ -35,9 +38,7 @@ Key reconciliations:
 
 After this foundation is reviewed, create:
 
-1. `07_VISUAL_DIRECTION.md`
-2. `08_DESIGN_SYSTEM.md`
-3. `09_COMPONENT_INVENTORY.md`
-4. A human-viewable visual preview or Figma library
+1. Approve `08_DESIGN_SYSTEM.md` and `09_COMPONENT_INVENTORY.md` for runtime implementation.
+2. Create a human-viewable component preview or Figma library as components are implemented.
 
 Runtime Compose tokens and components will remain the implementation source of truth in the repository.
