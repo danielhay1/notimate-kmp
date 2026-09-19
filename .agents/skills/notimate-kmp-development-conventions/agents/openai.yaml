@@ -1,0 +1,7 @@
+interface:
+  display_name: "NotiMate KMP Development Conventions"
+  short_description: "Apply repository-specific KMP conventions"
+  default_prompt: "Use $notimate-kmp-development-conventions with the senior KMP guidance while implementing this NotiMate change."
+
+policy:
+  allow_implicit_invocation: true
