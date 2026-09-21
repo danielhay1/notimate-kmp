@@ -109,6 +109,29 @@ Treat a violation of these rules as a blocker:
 - Require user confirmation before external provider writes in the MVP.
 - Do not claim a calendar event was created when only the editor was opened.
 
+## Secret and sensitive-data gate
+
+Inspect the complete pull-request diff, changed filenames, committed
+configuration, documentation, tests, fixtures, screenshots, logs, and binary
+additions for API keys, tokens, passwords, private keys, signing material,
+service-account credentials, real notification content, and personal data.
+
+Also verify that:
+
+- new developer-local secret files are covered by narrow `.gitignore` rules;
+- example configuration contains clearly nonfunctional placeholders only;
+- sensitive-looking files are not already tracked, because ignore rules do not
+  affect tracked files;
+- `.gitignore` changes neither miss the new secret location nor broadly hide
+  source, tests, specifications, or other reviewable project files;
+- claimed secret scanning or push protection is supported by observed evidence.
+
+Treat any likely committed secret or sensitive user payload as a blocker. Never
+repeat the value in review output. Report only the path, tight line range when
+safe, credential or data type, exposure path, and required remediation. If the
+value was published, require revocation or rotation; history cleanup alone is not
+sufficient and must not be performed by this reviewer.
+
 ## Validation
 
 Inspect the PR's claimed validation. Run focused commands when the environment
@@ -132,6 +155,7 @@ Use for defects that must be corrected before merge:
 - incorrect behavior on a realistic execution path;
 - build or required-test failure caused by the PR;
 - data loss, corruption, security, or privacy exposure;
+- committed credentials, signing material, or sensitive user data;
 - unsafe external side effects;
 - race, cancellation, lifecycle, or process-death behavior causing incorrect state;
 - KMP source-set violations or broken target compilation;

@@ -11,6 +11,11 @@ NotiMate turns transient mobile notifications into structured, private, useful a
 - API keys, tokens, credentials, signing secrets, and other sensitive values must not be embedded in source code, tests, specs, screenshots, or committed configuration.
 - Secrets must use structured safe configuration: Gradle properties or environment variables for build-time values, Android Keystore or encrypted storage for runtime secrets, and ignored local files for developer-only values.
 - Documentation may mention required secrets by placeholder name only.
+- Before every commit and pull-request update, scan the complete intended diff
+  and changed filenames for secrets and sensitive user data without printing
+  matched values.
+- A likely committed credential is a merge blocker. If one was published, revoke
+  or rotate it; history cleanup is secondary and requires explicit approval.
 - Cloud processing must not receive raw notification text. Future cloud features may receive only minimized structured data with explicit user consent.
 - Test fixtures and demos must use synthetic notification content.
 
@@ -60,6 +65,12 @@ NotiMate turns transient mobile notifications into structured, private, useful a
 - Keep each feature or bug fix isolated on its own branch.
 - Use `feature/<short-kebab-name>` for feature branches and `bug/<short-kebab-name>` for bug branches.
 - Prefer `main -> dev -> feature/*` or `main -> dev -> bug/*`; pull requests merge back into the correct base branch after user review.
+- An approved Git plan authorizes its task-scoped branch, commits, non-protected
+  pushes, pull-request creation or updates, independent review, and validated
+  review fixes. It never authorizes a merge.
+- Never commit or push directly to `dev` or `main`, approve an agent-authored pull
+  request, bypass push protection, force-push published history, or delete a
+  branch or worktree without the user's explicit authorization.
 - For long-running or high-effort work, split research, implementation, review, and validation across workflows or multiple agents when useful.
 
 ## Reliability Principles

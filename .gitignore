@@ -40,6 +40,24 @@ output.json
 *.mobileprovision
 *.orig
 
+# Local secrets and provider configuration
+.env
+.env.*
+!.env.example
+!.env.*.example
+secrets.properties
+keystore.properties
+signing.properties
+credentials.json
+service-account*.json
+google-services.json
+GoogleService-Info.plist
+*.key
+*.pkcs12
+/secrets/
+/.secrets/
+**/secrets/
+
 # IDE/editor local files
 .idea/
 *.iml
@@ -57,5 +75,7 @@ Pods/
 hs_err_pid*
 replay_pid*
 
-# Private local task files
-/tasks/
+# Private local task state
+/tasks/private/
+/tasks/runtime/
+/tasks/**/*.local.md

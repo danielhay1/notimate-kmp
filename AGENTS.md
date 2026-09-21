@@ -22,7 +22,10 @@ Preserve unrelated user changes and follow the most specific applicable skill.
 
 Before implementation work, provide a short Git plan for the feature or bug fix
 and wait for user approval. After approval, provide a short branch/merge diagram
-and the exact command list before changing code.
+and the exact command list before changing code. That approval authorizes the
+task-scoped branch, edits, staging, commits, non-protected-branch pushes, pull
+request creation or updates, review, and validated review fixes described by the
+plan.
 
 Use isolated branches:
 
@@ -35,8 +38,14 @@ main
 
 Create and check out the approved branch before implementation. Keep the work
 isolated from unrelated changes. Open a pull request into the approved base only
-after validation. Never commit, push, open or approve a pull request, or merge
-without the user's authorization for that action.
+after validation and a passing secret scan of the intended diff.
+
+Never commit or push directly to `dev` or `main`. Never approve an agent-authored
+pull request or merge any pull request. The user must review and authorize every
+merge. Require new approval before material scope expansion, destructive actions,
+published-history rewrites, force pushes, push-protection bypasses, or branch and
+worktree deletion. Prefer additive commits; a clean, unpublished, agent-owned
+branch may be rebased onto `dev` when the approved plan requires it.
 
 ## Specification Authority
 
@@ -62,6 +71,17 @@ Do not embed API keys, tokens, credentials, signing secrets, or sensitive values
 in source code, tests, specs, screenshots, comments, KDoc, or committed
 configuration. Use structured platform-safe configuration and document required
 keys with placeholder names only.
+
+Before every commit and pull-request update, inspect the complete intended diff
+and changed filenames for secrets and sensitive user data. Treat `.gitignore` as
+defense in depth: it does not protect already tracked files. Do not print a
+suspected secret in commands, logs, review findings, commit messages, or pull
+request text; report only its path, line, and redacted credential type.
+
+If a likely secret is found before publication, stop and remove it from the
+change. If it was pushed, stop further publication, treat it as compromised, and
+ask the user to revoke or rotate it. Rewriting published history requires the
+user's explicit approval and does not replace rotation.
 
 ## Notification Agent Invariants
 

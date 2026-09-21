@@ -1,6 +1,6 @@
 ---
 name: notimate-kmp-git-writting-conventions
-description: Draft or validate NotiMate Conventional Commit messages and pull request titles and bodies from the intended diff. Use when preparing commit or PR copy; do not use to commit, push, open, approve, or merge without separate user authorization.
+description: Draft or validate NotiMate Conventional Commit messages and pull request titles and bodies from the intended diff. Use when preparing commit or PR copy; Git actions follow the approved task plan, while approval and merging remain user-only.
 ---
 
 # NotiMate KMP Git Writting Conventions
@@ -16,6 +16,7 @@ Before drafting, inspect:
 2. The complete intended commit or pull-request diff against its actual base.
 3. The linked task packet and relevant specification when present.
 4. Validation results actually observed for that diff.
+5. The secret-scan result for the intended diff and changed filenames.
 
 Keep committed changes separate from unrelated working-tree changes. Do not include
 unrelated changes in the title, body, validation claims, or scope description.
@@ -68,11 +69,14 @@ synthetic data. Never invent links, validation, screenshots, results, or product
 claims. This is the project's Google-aligned KMP convention, not a claim that
 Google defines this exact commit or pull-request format.
 
+Never include a credential, sensitive value, raw notification body, or secret
+scanner match in a title or body. A likely secret blocks commit or pull-request
+delivery. Identify it only by path, line when safe, and redacted type.
+
 ## Output and authorization
 
-Present the exact title and body when requesting commit or pull-request approval.
-State when required evidence is missing instead of filling gaps with assumptions.
-
-Drafting delivery copy does not authorize staging, committing, pushing, opening a
-pull request, approving, or merging. Perform those actions only when the user has
-separately authorized them.
+Present the exact title and body before delivery. State when required evidence is
+missing instead of filling gaps with assumptions. Staging, committing, pushing a
+non-protected task branch, and opening or updating its pull request are authorized
+only by the approved Git plan. Never approve an agent-authored pull request or
+merge; those decisions remain with the user.
