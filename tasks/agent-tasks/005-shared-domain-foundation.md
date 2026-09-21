@@ -5,8 +5,8 @@
 **Expected branch:** `feature/mvp-domain-foundation`
 
 Before editing, verify the checked-out branch. If blocked by a mismatch, tell the
-task invoker. Branch, commit, push, PR, and merge actions require explicit user
-permission.
+task invoker. The approved Git plan authorizes task-scoped delivery under repository
+`AGENTS.md`; merges and protected-branch changes remain user-only.
 
 ## Outcome
 

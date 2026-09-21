@@ -4,9 +4,9 @@
 **Depends on:** 001
 **Expected branch:** `feature/product-design-foundation`
 
-Before editing, verify the checked-out branch. If it is unset or incorrect, stop
-and tell the task invoker. Branch changes, commits, pushes, PRs, and merges require
-explicit user permission.
+Before editing, verify the checked-out branch. If blocked by a mismatch, tell the
+task invoker. The approved Git plan authorizes task-scoped delivery under repository
+`AGENTS.md`; merges and protected-branch changes remain user-only.
 
 ## Outcome
 
