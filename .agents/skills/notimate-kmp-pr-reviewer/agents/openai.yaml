@@ -1,0 +1,7 @@
+interface:
+  display_name: "NotiMate KMP PR Reviewer"
+  short_description: "Independent senior KMP and Android PR review"
+  default_prompt: "Use $notimate-kmp-pr-reviewer to review this pull request and report only validated blockers, should-fix findings, and nits."
+
+policy:
+  allow_implicit_invocation: true

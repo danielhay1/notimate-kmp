@@ -1,0 +1,7 @@
+interface:
+  display_name: "NotiMate KMP Comments and KDoc"
+  short_description: "Maintain durable Kotlin comments and KDoc"
+  default_prompt: "Use $notimate-kmp-comments-and-kdoc to add or review implementation comments and KDoc without adding session-related commentary."
+
+policy:
+  allow_implicit_invocation: true

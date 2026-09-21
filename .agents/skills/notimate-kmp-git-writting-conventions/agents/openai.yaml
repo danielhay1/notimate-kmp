@@ -1,0 +1,7 @@
+interface:
+  display_name: "NotiMate KMP Git Writting Conventions"
+  short_description: "Draft Conventional Commit and PR copy"
+  default_prompt: "Use $notimate-kmp-git-writting-conventions to draft an accurate commit message or pull request title and body from the intended diff."
+
+policy:
+  allow_implicit_invocation: true
