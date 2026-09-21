@@ -56,3 +56,6 @@ Pods/
 # JVM crash logs
 hs_err_pid*
 replay_pid*
+
+# Private local task files
+/tasks/
