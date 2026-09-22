@@ -34,6 +34,7 @@ jobs:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: .github/codex/prompts/pr-review.md
           output-file: codex-review.md
+          codex-args: '["--output-schema", ".github/codex/schemas/pr-review.schema.json"]'
           sandbox: read-only
           safety-strategy: drop-sudo
 
@@ -57,24 +58,182 @@ jobs:
         with:
           github-token: ${{ github.token }}
           script: |
-            const marker = "<!-- notimate-codex-pr-review -->";
-            const review = (process.env.REVIEW_RESULT || "").trim();
-            const completed = process.env.REVIEW_JOB_RESULT === "success" && review.length > 0;
-            const body = completed
-              ? `${marker}\n## Automated Codex PR review\n\n${review}`
-              : `${marker}\n## Automated Codex PR review\n\n` +
-                "REQUEST CHANGES\n\nThe automated review did not complete. " +
-                "Check the workflow logs and confirm that the `OPENAI_API_KEY` " +
-                "Actions secret is configured.";
+            const summaryMarker = "<!-- notimate-codex-pr-review -->";
+            const rawReview = (process.env.REVIEW_RESULT || "").trim();
+            const jobSucceeded = process.env.REVIEW_JOB_RESULT === "success";
+            const pullNumber = context.payload.pull_request.number;
+            const headSha = context.payload.pull_request.head.sha;
+
+            const severity = {
+              blocker: { emoji: "🔴", label: "Blocker" },
+              should_fix: { emoji: "🟡", label: "Should fix" },
+              nit: { emoji: "🟢", label: "Nit" },
+            };
+
+            const sanitize = (value) => String(value || "").replaceAll("@", "@\u200b");
+            let review;
+            let parseError;
+            try {
+              review = JSON.parse(rawReview);
+            } catch (error) {
+              parseError = error;
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pullNumber,
+              per_page: 100,
+            });
+
+            const diffLines = new Map();
+            for (const file of files) {
+              const sides = { LEFT: new Set(), RIGHT: new Set() };
+              let oldLine = 0;
+              let newLine = 0;
+              for (const patchLine of (file.patch || "").split("\n")) {
+                const header = patchLine.match(/^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+                if (header) {
+                  oldLine = Number(header[1]);
+                  newLine = Number(header[2]);
+                } else if (patchLine.startsWith("+") && !patchLine.startsWith("+++")) {
+                  sides.RIGHT.add(newLine++);
+                } else if (patchLine.startsWith("-") && !patchLine.startsWith("---")) {
+                  sides.LEFT.add(oldLine++);
+                } else if (patchLine.startsWith(" ")) {
+                  sides.LEFT.add(oldLine++);
+                  sides.RIGHT.add(newLine++);
+                }
+              }
+              diffLines.set(file.filename, sides);
+            }
+
+            const validFindings = [];
+            const invalidFindings = [];
+            if (review && Array.isArray(review.findings)) {
+              for (const finding of review.findings) {
+                const knownSeverity = severity[finding.severity];
+                const knownSide = finding.side === "LEFT" || finding.side === "RIGHT";
+                const allowedLines = diffLines.get(finding.path)?.[finding.side];
+                if (
+                  knownSeverity &&
+                  knownSide &&
+                  Number.isInteger(finding.line) &&
+                  allowedLines?.has(finding.line)
+                ) {
+                  validFindings.push(finding);
+                } else {
+                  invalidFindings.push(finding);
+                }
+              }
+            }
+
+            const previousInlineComments = await github.paginate(
+              github.rest.pulls.listReviewComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pullNumber,
+                per_page: 100,
+              },
+            );
+
+            const inlineComments = validFindings.flatMap((finding) => {
+              const meta = severity[finding.severity];
+              const key = Buffer.from(
+                JSON.stringify([
+                  headSha,
+                  finding.severity,
+                  finding.path,
+                  finding.line,
+                  finding.side,
+                  finding.title,
+                ]),
+              ).toString("base64url");
+              const marker = `<!-- notimate-codex-finding:${key} -->`;
+              if (previousInlineComments.some((comment) => comment.body?.includes(marker))) {
+                return [];
+              }
+              return [{
+                path: finding.path,
+                line: finding.line,
+                side: finding.side,
+                body: `${marker}\n${meta.emoji} **${meta.label}: ` +
+                  `${sanitize(finding.title)}**\n\n${sanitize(finding.body)}`,
+              }];
+            });
+
+            if (inlineComments.length > 0) {
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pullNumber,
+                commit_id: headSha,
+                event: "COMMENT",
+                body: "Automated Codex findings. Merge authority remains with the user.",
+                comments: inlineComments,
+              });
+            }
+
+            const findingLines = validFindings.length === 0
+              ? "None"
+              : validFindings.map((finding) => {
+                  const meta = severity[finding.severity];
+                  return `- ${meta.emoji} **${meta.label}: ${sanitize(finding.title)}** — ` +
+                    `\`${finding.path}:${finding.line}\` (${finding.side})`;
+                }).join("\n");
+
+            const rejected = Array.isArray(review?.rejected_concerns) &&
+              review.rejected_concerns.length > 0
+              ? review.rejected_concerns.map((item) => `- ${sanitize(item)}`).join("\n")
+              : "None";
+
+            const automationProblems = [];
+            if (!jobSucceeded) automationProblems.push("The Codex review job failed.");
+            if (parseError) automationProblems.push("The reviewer did not return valid schema JSON.");
+            if (invalidFindings.length > 0) {
+              automationProblems.push(
+                `${invalidFindings.length} finding(s) did not reference a valid PR diff line.`,
+              );
+            }
+
+            const verdict = review?.verdict || "REQUEST CHANGES";
+            const summaryBody = [
+              summaryMarker,
+              "## Automated Codex PR review",
+              "",
+              `**Verdict:** ${sanitize(verdict)}`,
+              "",
+              "### Scope reviewed",
+              sanitize(review?.scope_reviewed || "Review did not complete."),
+              "",
+              "### Findings",
+              findingLines,
+              "",
+              "Every finding above is attached to its referenced diff line.",
+              "",
+              "### Rejected concerns",
+              rejected,
+              "",
+              "### Validation assessment",
+              sanitize(review?.validation_assessment || "Unavailable."),
+              "",
+              "### Merge assessment",
+              sanitize(review?.merge_assessment || "Not ready until the review completes."),
+              automationProblems.length > 0
+                ? `\n### Automation errors\n${automationProblems.map((item) => `- ${item}`).join("\n")}`
+                : "",
+            ].join("\n").trim();
 
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
+              issue_number: pullNumber,
               per_page: 100,
             });
             const previous = comments.find(
-              (comment) => comment.user?.type === "Bot" && comment.body?.includes(marker),
+              (comment) => comment.user?.type === "Bot" &&
+                comment.body?.includes(summaryMarker),
             );
 
             if (previous) {
@@ -82,19 +241,31 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: previous.id,
-                body,
+                body: summaryBody,
               });
             } else {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                body,
+                issue_number: pullNumber,
+                body: summaryBody,
               });
             }
 
-            const verdict = review.split(/\r?\n/).find((line) => line.trim())?.trim();
             const acceptedVerdict = ["APPROVE", "APPROVE WITH FOLLOW-UPS"].includes(verdict);
-            if (!completed || !acceptedVerdict) {
+            const hasBlocker = validFindings.some((finding) => finding.severity === "blocker");
+            const hasShouldFix = validFindings.some(
+              (finding) => finding.severity === "should_fix",
+            );
+            const inconsistentVerdict =
+              (hasBlocker && verdict !== "REQUEST CHANGES") ||
+              (hasShouldFix && verdict === "APPROVE");
+            if (
+              !jobSucceeded ||
+              parseError ||
+              invalidFindings.length > 0 ||
+              inconsistentVerdict ||
+              !acceptedVerdict
+            ) {
               core.setFailed("The automated PR review did not return an approval verdict.");
             }

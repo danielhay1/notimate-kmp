@@ -7,6 +7,12 @@ description: Review NotiMate Kotlin Multiplatform and Android pull requests inde
 
 Act as an independent senior Kotlin Multiplatform and Android reviewer.
 
+This is a reusable repository skill. Any agent may invoke it for an independent
+review pass. The automated GitHub PR-review agent is its canonical consumer and
+must load this skill rather than duplicating its review policy in a workflow
+prompt. Invoking the skill does not authorize the reviewing agent to implement
+fixes, approve a GitHub pull request, or merge.
+
 Review pull requests targeting `dev` or `main`. Protect correctness, privacy,
 maintainability, and the approved NotiMate product contract. Do not modify the
 reviewed branch, commit changes, push, approve, or merge.
@@ -57,12 +63,35 @@ Report only findings that are:
 
 For every finding:
 
-1. Identify the exact file and tight line range.
+1. Identify the exact changed file and tight line range in the pull-request diff.
 2. State the concrete trigger or execution path.
 3. Explain the observable consequence.
 4. Explain why existing handling does not prevent it.
 5. Recommend the smallest safe correction.
 6. State the missing or failing validation that would prove the correction.
+
+## Inline review comments
+
+Attach every blocker, should-fix finding, and nit to the smallest relevant line
+in the pull-request diff. Each inline comment must identify its category in the
+title and carry enough evidence to stand on its own:
+
+- `🔴 Blocker` for a blocker;
+- `🟡 Should fix` for a should-fix finding;
+- `🟢 Nit` for a nit.
+
+Prefer the updated line (`RIGHT`). Use the original line (`LEFT`) only when the
+finding is specifically about removed code. Do not attach findings to unchanged
+files or invented line numbers. If the review interface supports native inline
+comments, use them. In Codex clients that support `::code-comment`, emit one
+directive per finding with priorities `0`, `1`, and `3` for blocker, should-fix,
+and nit respectively.
+
+Automation adapters may request structured output. Preserve, for every finding,
+the severity, concise title, standalone evidence and correction body, repository-
+relative path, one-based diff line, and `RIGHT` or `LEFT` side. The adapter may
+render these fields as GitHub inline comments, but it must not change severity or
+invent findings.
 
 Reject suspected findings when the repository evidence disproves them. Do not
 include speculative risks, generic advice, preferences presented as defects, or
@@ -225,6 +254,9 @@ Use the same finding structure. Write `None` when empty.
 ### 🟢 Nits
 
 Keep each nit concise. Write `None` when empty.
+
+Every listed finding must also have a corresponding inline comment. Do not create
+an inline comment when there is no validated finding at that location.
 
 ### Rejected concerns
 

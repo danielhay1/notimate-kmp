@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["REQUEST CHANGES", "APPROVE WITH FOLLOW-UPS", "APPROVE"]
+    },
+    "scope_reviewed": {
+      "type": "string"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": ["blocker", "should_fix", "nit"]
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "side": {
+            "type": "string",
+            "enum": ["RIGHT", "LEFT"]
+          }
+        },
+        "required": ["severity", "title", "body", "path", "line", "side"]
+      }
+    },
+    "rejected_concerns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "validation_assessment": {
+      "type": "string"
+    },
+    "merge_assessment": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "verdict",
+    "scope_reviewed",
+    "findings",
+    "rejected_concerns",
+    "validation_assessment",
+    "merge_assessment"
+  ]
+}

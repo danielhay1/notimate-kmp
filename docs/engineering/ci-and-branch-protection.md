@@ -25,11 +25,17 @@ as short-lived workflow artifacts.
 
 ## Automated PR review
 
-The `Codex PR Review / Publish review verdict` check runs the versioned prompt in
-`.github/codex/prompts/pr-review.md` with the repository PR-reviewer instructions.
-The model job has read-only repository permission, a read-only sandbox, no saved
-Git credentials, and no permission to post or change pull requests. A separate
-job with narrowly scoped GitHub permissions updates one marked review comment.
+The `Codex PR Review / Publish review verdict` check invokes the reusable
+`$notimate-kmp-pr-reviewer` skill through the versioned prompt in
+`.github/codex/prompts/pr-review.md`. The model job has read-only repository
+permission, a read-only sandbox, no saved Git credentials, and no permission to
+post or change pull requests. A separate job with narrowly scoped GitHub
+permissions converts the structured findings into native inline review comments
+and updates one marked summary comment.
+
+Every inline comment is attached to a real pull-request diff line and labeled as
+`🔴 Blocker`, `🟡 Should fix`, or `🟢 Nit`. The workflow submits comments only; it
+never sends a GitHub approval or request-changes review on the user's behalf.
 
 `APPROVE` and `APPROVE WITH FOLLOW-UPS` pass the review check. `REQUEST CHANGES`,
 a missing response, or an action failure fails it. The verdict remains advisory;
