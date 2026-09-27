@@ -48,6 +48,9 @@ jobs:
           --no-daemon
           --stacktrace
 
+      - name: Verify review workflow safety and publishing
+        run: node --test .github/codex/review-workflow.test.cjs
+
       - name: Upload failure reports
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
