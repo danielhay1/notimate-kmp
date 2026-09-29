@@ -33,6 +33,18 @@ values are not republished. A detected secret blocks the check. Treat any publis
 credential as compromised and rotate or revoke it; deleting it from the latest
 commit is not sufficient.
 
+## CodeQL security analysis
+
+The separate `CodeQL` workflow uses advanced setup with a manual Android build.
+Kotlin analysis requires compilation; build mode `none` would omit Kotlin.
+Compilation runs after initialization with build caching disabled and tasks rerun
+so CodeQL observes the compiler. Swift analysis is deferred for the Android MVP.
+
+Disable GitHub CodeQL default setup before activating this advanced workflow.
+The analysis job grants `security-events: write` only to publish scan results via
+the temporary GitHub token; it uses no stored credentials or OpenAI API key.
+Verify a hosted analysis completes before requiring its check in branch rules.
+
 ## Agent review cycle
 
 GitHub Actions does not perform semantic code review. After an approved task branch
