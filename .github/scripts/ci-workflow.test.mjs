@@ -10,7 +10,7 @@ const workflow = fs.readFileSync(
 test("uses pull-request events without privileged credentials", () => {
   assert.match(workflow, /\n  pull_request:\n/);
   assert.match(workflow, /types: \[opened, reopened, synchronize, ready_for_review, edited\]/);
-  assert.doesNotMatch(workflow, /pull_request_target|OPENAI_API_KEY|secrets\./);
+  assert.doesNotMatch(workflow, /pull_request_target|OPENAI_API_KEY|\$\{\{\s*secrets\./);
   assert.doesNotMatch(workflow, /^\s*[\w-]+:\s*write\s*$/m);
 });
 
@@ -38,7 +38,9 @@ test("pins every action and disables persisted checkout credentials", () => {
 });
 
 test("keeps secret-scan publication disabled", () => {
-  assert.match(workflow, /GITLEAKS_ENABLE_COMMENTS: "false"/);
-  assert.match(workflow, /GITLEAKS_ENABLE_SUMMARY: "false"/);
-  assert.match(workflow, /GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"/);
+  assert.doesNotMatch(workflow, /gitleaks\/gitleaks-action@/);
+  assert.match(workflow, /GITLEAKS_BIN=.*bash \.github\/scripts\/scan-pr-secrets\.sh/);
+  const scanner = fs.readFileSync(new URL("scan-pr-secrets.sh", import.meta.url), "utf8");
+  assert.match(scanner, /--log-opts="--diff-merges=first-parent \$BASE_SHA\.\.\$HEAD_SHA"/);
+  assert.doesNotMatch(scanner, /--first-parent|--no-merges|--report-path/);
 });

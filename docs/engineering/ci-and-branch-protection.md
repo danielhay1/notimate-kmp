@@ -16,7 +16,8 @@ The required checks are:
   and debug APK assembly;
 - `CI / PR policy`: Conventional Commit title, required body evidence, validator
   tests, and whitespace errors in the exact base-to-head diff;
-- `CI / Dependency review`: newly introduced moderate-or-higher vulnerabilities;
+- `CI / Dependency review`: newly introduced moderate-or-higher vulnerabilities,
+  comparing resolved Gradle snapshots for the exact pull-request base and head;
 - `CI / Secret scan`: secrets introduced anywhere in the pull-request commits.
 
 The Android MVP intentionally does not require iOS CI. Validate behavior in
@@ -28,10 +29,29 @@ immutable commits, checkout credentials are not persisted, and obsolete runs are
 cancelled. The temporary `GITHUB_TOKEN` is read-only; it is not a user-provided
 credential or OpenAI API key.
 
-Gitleaks comments, summaries, and report artifacts are disabled so suspected
-values are not republished. A detected secret blocks the check. Treat any published
-credential as compromised and rotate or revoke it; deleting it from the latest
-commit is not sufficient.
+The separate `Dependency snapshots` workflow resolves the full Gradle dependency
+graph for both compared commits with a read-only token. It uploads JSON artifacts
+and fails if either graph contains no resolved Maven dependencies. The trusted
+`Submit dependency snapshots` workflow runs from the default branch after
+generation succeeds. It downloads JSON only, verifies the source workflow and
+current pull-request revisions, and submits both snapshots with a temporary
+`contents: write` token. It never checks out or executes pull-request code, restores
+caches, or reads stored secrets. Both submitted graphs share one detector/job
+correlator so GitHub compares the same dependency source across revisions.
+
+Dependency review waits up to 30 minutes for submission. Missing-snapshot warnings
+still block the gate after that wait; a green result cannot represent missing
+Gradle coverage. Generation or submission failures require inspection of the
+corresponding workflow before rerunning the dependency-review job.
+
+Secret scanning uses a checksum-verified Gitleaks CLI release against the explicit
+event base/head commit range, including first-parent merge diffs. It requires no
+GitHub commits API pagination or authentication. Findings are redacted, inline
+allow comments cannot suppress detection, and no report artifacts or PR comments
+are published. A regression fixture proves detection of a synthetic credential
+added after commit 30 and removed from the final tree. A detected secret blocks
+the check. Treat any published credential as compromised and rotate or revoke it;
+deleting it from the latest commit is not sufficient.
 
 ## CodeQL security analysis
 
@@ -87,10 +107,19 @@ required before configuring a mechanically required user approval.
 
 ## Activation
 
+The snapshot-submission workflow must first be present on GitHub's default branch
+because `workflow_run` only activates from that branch. Promote these infrastructure
+files through a separate user-reviewed pull request into `main`; never push them
+directly. Until that bootstrap is merged, the dependency-review gate intentionally
+fails because snapshots cannot be submitted. Do not describe the MVP pull request
+as merge-ready during bootstrap. The repository dependency graph must also be
+enabled. After activation, rerun both snapshot generation and the failed CI gate.
+
 1. Merge the workflow to `dev` through a user-reviewed pull request.
 2. Open a harmless smoke-test pull request and add a second commit.
 3. Verify that creation and synchronization run all four checks on the latest SHA.
 4. Edit the title or body and verify that `CI / PR policy` reruns.
-5. Confirm no workflow requests a stored secret or has write permission.
+5. Confirm no workflow requests a stored secret; only the trusted data-only
+   snapshot publisher and CodeQL result publisher request their required writes.
 6. Add the observed check names to the `dev` ruleset, then repeat when promoting
    the workflow to `main`.
