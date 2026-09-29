@@ -1,0 +1,7 @@
+interface:
+  display_name: "NotiMate KMP PR Delivery"
+  short_description: "Deliver PRs through independent review cycles"
+  default_prompt: "Use $notimate-kmp-pr-delivery to validate and deliver the approved task branch through an independent review-fix cycle without approving or merging it."
+
+policy:
+  allow_implicit_invocation: true

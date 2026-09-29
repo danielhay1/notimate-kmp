@@ -8,10 +8,10 @@ description: Review NotiMate Kotlin Multiplatform and Android pull requests inde
 Act as an independent senior Kotlin Multiplatform and Android reviewer.
 
 This is a reusable repository skill. Any agent may invoke it for an independent
-review pass. The automated GitHub PR-review agent is its canonical consumer and
-must load this skill rather than duplicating its review policy in a workflow
-prompt. Invoking the skill does not authorize the reviewing agent to implement
-fixes, approve a GitHub pull request, or merge.
+review pass. `$notimate-kmp-pr-delivery` invokes a fresh reviewer for each delivery
+cycle and must load this skill rather than duplicating its policy. Invoking the
+skill does not authorize the reviewing agent to implement fixes, approve a GitHub
+pull request, or merge.
 
 Review pull requests targeting `dev` or `main`. Protect correctness, privacy,
 maintainability, and the approved NotiMate product contract. Do not modify the
@@ -38,6 +38,11 @@ invent the intended behavior.
 ## Review scope
 
 Review the complete pull-request diff against its declared base branch.
+
+Record the exact base SHA, head SHA, and diff range before reviewing. A changed
+base or head invalidates the verdict. Inspect the complete current diff
+independently before reading earlier findings or author replies; then reconcile
+every prior finding and claimed false positive against the code and validation.
 
 Separate these scopes explicitly:
 
@@ -202,8 +207,7 @@ Use for material problems that should normally be corrected before merge:
 - duplicated ownership or unclear source of truth;
 - divergence from an established project pattern without justification.
 
-A should-fix finding may be explicitly deferred only when the reviewer identifies
-a safe boundary and a concrete follow-up task.
+A real should-fix finding remains blocking even when a follow-up task exists.
 
 ### 🟢 Nits
 
@@ -213,14 +217,14 @@ Use sparingly for small, local improvements:
 - minor API or documentation inconsistencies;
 - small simplifications with an obvious benefit.
 
-Do not block merge on nits. Do not report formatter output or personal preferences.
+Nits block readiness under this repository's strict zero-finding policy. Use them
+sparingly and do not report formatter output or personal preferences.
 
 ## Required output
 
 Start with one verdict:
 
 - `REQUEST CHANGES`
-- `APPROVE WITH FOLLOW-UPS`
 - `APPROVE`
 
 Then report:
@@ -270,17 +274,16 @@ reproduced.
 
 ### Merge assessment
 
-State whether the PR is ready for the user's review. Identify unresolved blockers,
-accepted follow-ups, and residual risks.
+State whether the PR is ready for the user's review. Identify unresolved findings
+and residual risks.
 
 ## Verdict rules
 
 - Any blocker produces `REQUEST CHANGES`.
-- A should-fix normally produces `REQUEST CHANGES`.
-- Use `APPROVE WITH FOLLOW-UPS` only when remaining should-fix items are safely
-  bounded and have an explicit follow-up task.
-- Use `APPROVE` when no blockers or should-fix findings remain.
-- Nits alone do not prevent `APPROVE`.
+- Any should-fix finding produces `REQUEST CHANGES`.
+- Any nit produces `REQUEST CHANGES`.
+- Use `APPROVE` only when no validated findings remain for the exact current head
+  SHA. A rejected concern must include evidence showing why it is not a finding.
 
 The verdict is advisory. Only the user may authorize merging, and this reviewer
 never merges a pull request.

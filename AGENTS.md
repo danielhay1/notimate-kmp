@@ -12,6 +12,9 @@ Preserve unrelated user changes and follow the most specific applicable skill.
   use `$notimate-kmp-comments-and-kdoc`.
 - For commit messages and pull-request titles or bodies, use
   `$notimate-kmp-git-writting-conventions`.
+- For delivery of an approved task branch through commit, push, pull-request
+  creation or update, independent review, and validated review fixes, use
+  `$notimate-kmp-pr-delivery`.
 - For independent PR and merge-readiness reviews, use
   `$notimate-kmp-pr-reviewer`.
 - Add a more specialized KMP skill when the task materially concerns its domain,
