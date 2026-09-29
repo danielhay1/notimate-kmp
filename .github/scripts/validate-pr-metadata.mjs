@@ -42,7 +42,11 @@ export function validatePullRequest({ title = "", body = "" } = {}) {
   const validation = sectionContent(body, "Validation");
   const hasUnexplainedSkippedValidation = validation
     .split(/\r?\n/)
-    .map((line) => line.trim().replace(/^[-*+]\s+/, ""))
+    .map((line) =>
+      line
+        .trim()
+        .replace(/^(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?/, ""),
+    )
     .some((line) => /^not run\b/i.test(line) && !/^not run\s*:\s*\S.+/i.test(line));
   if (hasUnexplainedSkippedValidation) {
     errors.push("Explain why validation was not run after 'Not run:'.");

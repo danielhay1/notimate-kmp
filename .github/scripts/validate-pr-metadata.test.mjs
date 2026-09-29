@@ -80,7 +80,14 @@ Not run
 });
 
 test("rejects unexplained skipped validation in Markdown lists", () => {
-  for (const validation of ["- Not run", "* Not run", "  +   Not run  "]) {
+  for (const validation of [
+    "- Not run",
+    "* Not run",
+    "  +   Not run  ",
+    "1. Not run",
+    "1) Not run",
+    "- [ ] Not run",
+  ]) {
     const errors = validatePullRequest({
       title: "ci(github): validate pull request metadata",
       body: validBody.replace("Node tests and Android verification passed.", validation),
@@ -90,16 +97,19 @@ test("rejects unexplained skipped validation in Markdown lists", () => {
 });
 
 test("accepts an explained skipped validation list item", () => {
-  assert.deepEqual(
-    validatePullRequest({
-      title: "docs(ci): document pull request metadata",
-      body: validBody.replace(
-        "Node tests and Android verification passed.",
-        "- Not run: documentation-only change.",
-      ),
-    }),
-    [],
-  );
+  for (const validation of [
+    "- Not run: documentation-only change.",
+    "1. Not run: documentation-only change.",
+    "- [ ] Not run: documentation-only change.",
+  ]) {
+    assert.deepEqual(
+      validatePullRequest({
+        title: "docs(ci): document pull request metadata",
+        body: validBody.replace("Node tests and Android verification passed.", validation),
+      }),
+      [],
+    );
+  }
 });
 
 test("treats metadata as text rather than executable input", () => {
