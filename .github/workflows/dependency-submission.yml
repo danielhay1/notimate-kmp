@@ -1,0 +1,156 @@
+name: Submit dependency snapshots
+
+on:
+  workflow_run:
+    workflows: [Dependency snapshots]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  context:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Validate source run and current pull request
+        id: context
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            if (run.repository.full_name !== `${context.repo.owner}/${context.repo.repo}` || run.path !== '.github/workflows/dependency-snapshots.yml') {
+              throw new Error('Unexpected dependency snapshot source.');
+            }
+            if (run.pull_requests.length !== 1) throw new Error('Expected one source pull request.');
+            const source = run.pull_requests[0];
+            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: source.number });
+            if (pr.state !== 'open' || !['dev', 'main'].includes(pr.base.ref) || pr.base.sha !== source.base.sha || pr.head.sha !== source.head.sha) {
+              throw new Error('Source snapshots are stale or target an unsupported branch.');
+            }
+            const workflowPath = '.github/workflows/dependency-snapshots.yml';
+            const { data: trusted } = await github.rest.repos.getContent({ ...context.repo, path: workflowPath, ref: context.sha });
+            const { data: producer } = await github.rest.repos.getContent({ ...context.repo, path: workflowPath, ref: pr.head.sha });
+            if (trusted.type !== 'file' || producer.type !== 'file' || trusted.sha !== producer.sha) {
+              throw new Error('Source producer workflow differs from trusted default-branch policy.');
+            }
+            const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, { ...context.repo, run_id: run.id });
+            if (artifacts.length !== 1 || artifacts[0].name !== 'dependency-graph_notimate-gradle-head.json' || artifacts[0].expired) {
+              throw new Error('Unexpected source artifact; PR base artifacts are forbidden.');
+            }
+            core.setOutput('number', pr.number);
+            core.setOutput('base', pr.base.sha);
+            core.setOutput('head', pr.head.sha);
+            core.setOutput('base-ref', pr.base.ref);
+    outputs:
+      number: ${{ steps.context.outputs.number }}
+      base: ${{ steps.context.outputs.base }}
+      head: ${{ steps.context.outputs.head }}
+      base-ref: ${{ steps.context.outputs.base-ref }}
+
+  trusted-base:
+    needs: context
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - name: Check out trusted base revision
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ needs.context.outputs.base }}
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Generate trusted base dependencies
+        uses: gradle/actions/dependency-submission@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
+        env:
+          GITHUB_DEPENDENCY_GRAPH_SHA: ${{ needs.context.outputs.base }}
+          GITHUB_DEPENDENCY_GRAPH_REF: refs/heads/${{ needs.context.outputs.base-ref }}
+          GITHUB_DEPENDENCY_GRAPH_JOB_CORRELATOR: notimate-gradle-base
+        with:
+          dependency-graph: generate-and-upload
+          dependency-graph-report-dir: dependency-graph-reports/base
+          dependency-graph-continue-on-failure: false
+          cache-provider: basic
+          cache-disabled: true
+          artifact-retention-days: 2
+          additional-arguments: --no-daemon --no-configuration-cache --stacktrace
+
+  submit:
+    needs: [context, trusted-base]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Download trusted base data from this run
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ github.run_id }}
+          name: dependency-graph_notimate-gradle-base.json
+          path: snapshots/base
+
+      - name: Download PR head data only
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: dependency-graph_notimate-gradle-head.json
+          path: snapshots/head
+
+      - name: Validate and submit both snapshots
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          PR_NUMBER: ${{ needs.context.outputs.number }}
+          BASE_SHA: ${{ needs.context.outputs.base }}
+          HEAD_SHA: ${{ needs.context.outputs.head }}
+          BASE_REF: ${{ needs.context.outputs.base-ref }}
+        with:
+          script: |
+            const fs = require('node:fs');
+            const path = require('node:path');
+            const root = path.resolve('snapshots');
+            const snapshots = [];
+            for (const revision of ['base', 'head']) {
+              const directory = path.join(root, revision, 'dependency-graph-reports', revision);
+              if (fs.realpathSync(directory) !== directory) throw new Error('Snapshot directory must not be a symlink.');
+              const files = fs.readdirSync(directory);
+              if (files.length !== 1 || !files[0].endsWith('.json')) throw new Error('Missing or ambiguous snapshot.');
+              const file = path.join(directory, files[0]);
+              if (!fs.lstatSync(file).isFile() || fs.statSync(file).size > 10000000) throw new Error('Invalid snapshot file.');
+              const snapshot = JSON.parse(fs.readFileSync(file, 'utf8'));
+              const sha = revision === 'base' ? process.env.BASE_SHA : process.env.HEAD_SHA;
+              const dependencies = Object.values(snapshot.manifests ?? {}).flatMap(manifest => Object.values(manifest.resolved ?? {}));
+              if (snapshot.sha !== sha || !dependencies.some(dependency => dependency.package_url?.startsWith('pkg:maven/'))) {
+                throw new Error('Snapshot revision or resolved Gradle coverage is invalid.');
+              }
+              const manifests = Object.values(snapshot.manifests);
+              if (manifests.length !== 1) throw new Error('Expected one root Gradle manifest.');
+              snapshots.push({
+                version: 0, sha,
+                ref: revision === 'base' ? `refs/heads/${process.env.BASE_REF}` : `refs/pull/${process.env.PR_NUMBER}/head`,
+                job: { id: String(context.payload.workflow_run.id), correlator: 'notimate-gradle' },
+                detector: snapshot.detector, scanned: snapshot.scanned,
+                manifests: { 'notimate-gradle': { ...manifests[0], name: 'notimate-gradle' } }
+              });
+            }
+            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: Number(process.env.PR_NUMBER) });
+            if (pr.base.sha !== process.env.BASE_SHA || pr.head.sha !== process.env.HEAD_SHA || pr.state !== 'open') {
+              throw new Error('Pull request changed before submission.');
+            }
+            for (const snapshot of snapshots) {
+              await github.request('POST /repos/{owner}/{repo}/dependency-graph/snapshots', { ...context.repo, ...snapshot });
+            }
