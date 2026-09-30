@@ -14,18 +14,14 @@ concurrency:
 
 jobs:
   generate:
-    name: Resolve Gradle dependencies (${{ matrix.revision }})
+    name: Resolve PR head Gradle dependencies
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        revision: [base, head]
     steps:
       - name: Check out exact revision
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          ref: ${{ matrix.revision == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
 
       - name: Set up Java
@@ -37,12 +33,12 @@ jobs:
       - name: Resolve and save dependency snapshot
         uses: gradle/actions/dependency-submission@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6
         env:
-          GITHUB_DEPENDENCY_GRAPH_SHA: ${{ matrix.revision == 'base' && github.event.pull_request.base.sha || github.event.pull_request.head.sha }}
-          GITHUB_DEPENDENCY_GRAPH_REF: ${{ matrix.revision == 'base' && format('refs/heads/{0}', github.event.pull_request.base.ref) || format('refs/pull/{0}/head', github.event.pull_request.number) }}
-          GITHUB_DEPENDENCY_GRAPH_JOB_CORRELATOR: notimate-gradle-${{ matrix.revision }}
+          GITHUB_DEPENDENCY_GRAPH_SHA: ${{ github.event.pull_request.head.sha }}
+          GITHUB_DEPENDENCY_GRAPH_REF: refs/pull/${{ github.event.pull_request.number }}/head
+          GITHUB_DEPENDENCY_GRAPH_JOB_CORRELATOR: notimate-gradle-head
         with:
           dependency-graph: generate-and-upload
-          dependency-graph-report-dir: dependency-graph-reports/${{ matrix.revision }}
+          dependency-graph-report-dir: dependency-graph-reports/head
           dependency-graph-continue-on-failure: false
           cache-provider: basic
           cache-disabled: true
@@ -51,7 +47,7 @@ jobs:
 
       - name: Require generated Maven dependencies
         env:
-          SNAPSHOT_DIRECTORY: dependency-graph-reports/${{ matrix.revision }}
+          SNAPSHOT_DIRECTORY: dependency-graph-reports/head
         run: |
           node --input-type=module <<'JS'
           import { readdirSync, readFileSync } from 'node:fs';

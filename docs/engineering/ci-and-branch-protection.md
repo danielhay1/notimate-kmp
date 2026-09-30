@@ -29,15 +29,20 @@ immutable commits, checkout credentials are not persisted, and obsolete runs are
 cancelled. The temporary `GITHUB_TOKEN` is read-only; it is not a user-provided
 credential or OpenAI API key.
 
-The separate `Dependency snapshots` workflow resolves the full Gradle dependency
-graph for both compared commits with a read-only token. It uploads JSON artifacts
-and fails if either graph contains no resolved Maven dependencies. The trusted
-`Submit dependency snapshots` workflow runs from the default branch after
-generation succeeds. It downloads JSON only, verifies the source workflow and
-current pull-request revisions, and submits both snapshots with a temporary
-`contents: write` token. It never checks out or executes pull-request code, restores
-caches, or reads stored secrets. Both submitted graphs share one detector/job
-correlator so GitHub compares the same dependency source across revisions.
+The separate `Dependency snapshots` workflow resolves only the PR head with a
+read-only token. The default-branch `Submit dependency snapshots` workflow verifies
+the current PR revisions and requires the producer workflow to match its installed
+default-branch policy. PR-run base artifacts are rejected. An isolated read-only
+job checks out the API-confirmed base SHA without persisted credentials or caches
+and generates the authoritative base graph itself.
+
+The isolated `contents: write` submission job executes no repository code. It
+downloads the exact base artifact from its own trusted run and the exact head
+artifact from the source PR run, validates both JSON documents, rechecks the PR
+revisions, and submits them with a shared detector/job correlator. Neither build
+job receives a write token or stored secrets. PR Gradle code can still falsify its
+own head graph; producer-policy verification is not proof of dependency content.
+Independent review of dependency and build-script changes remains necessary.
 
 Dependency review waits up to 30 minutes for submission. Missing-snapshot warnings
 still block the gate after that wait; a green result cannot represent missing
@@ -107,8 +112,9 @@ required before configuring a mechanically required user approval.
 
 ## Activation
 
-The snapshot-submission workflow must first be present on GitHub's default branch
-because `workflow_run` only activates from that branch. Promote these infrastructure
+The snapshot-submission workflow and matching head-only producer policy must first
+be present on GitHub's default branch because `workflow_run` only activates from
+that branch and producer validation uses that trusted policy. Promote these infrastructure
 files through a separate user-reviewed pull request into `main`; never push them
 directly. Until that bootstrap is merged, the dependency-review gate intentionally
 fails because snapshots cannot be submitted. Do not describe the MVP pull request
