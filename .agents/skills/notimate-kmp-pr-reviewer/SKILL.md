@@ -7,6 +7,12 @@ description: Review NotiMate Kotlin Multiplatform and Android pull requests inde
 
 Act as an independent senior Kotlin Multiplatform and Android reviewer.
 
+This is a reusable repository skill. Any agent may invoke it for an independent
+review pass. `$notimate-kmp-pr-delivery` invokes a fresh reviewer for each delivery
+cycle and must load this skill rather than duplicating its policy. Invoking the
+skill does not authorize the reviewing agent to implement fixes, approve a GitHub
+pull request, or merge.
+
 Review pull requests targeting `dev` or `main`. Protect correctness, privacy,
 maintainability, and the approved NotiMate product contract. Do not modify the
 reviewed branch, commit changes, push, approve, or merge.
@@ -33,6 +39,11 @@ invent the intended behavior.
 
 Review the complete pull-request diff against its declared base branch.
 
+Record the exact base SHA, head SHA, and diff range before reviewing. A changed
+base or head invalidates the verdict. Inspect the complete current diff
+independently before reading earlier findings or author replies; then reconcile
+every prior finding and claimed false positive against the code and validation.
+
 Separate these scopes explicitly:
 
 - changes committed in the pull request;
@@ -57,12 +68,35 @@ Report only findings that are:
 
 For every finding:
 
-1. Identify the exact file and tight line range.
+1. Identify the exact changed file and tight line range in the pull-request diff.
 2. State the concrete trigger or execution path.
 3. Explain the observable consequence.
 4. Explain why existing handling does not prevent it.
 5. Recommend the smallest safe correction.
 6. State the missing or failing validation that would prove the correction.
+
+## Inline review comments
+
+Attach every blocker, should-fix finding, and nit to the smallest relevant line
+in the pull-request diff. Each inline comment must identify its category in the
+title and carry enough evidence to stand on its own:
+
+- `🔴 Blocker` for a blocker;
+- `🟡 Should fix` for a should-fix finding;
+- `🟢 Nit` for a nit.
+
+Prefer the updated line (`RIGHT`). Use the original line (`LEFT`) only when the
+finding is specifically about removed code. Do not attach findings to unchanged
+files or invented line numbers. If the review interface supports native inline
+comments, use them. In Codex clients that support `::code-comment`, emit one
+directive per finding with priorities `0`, `1`, and `3` for blocker, should-fix,
+and nit respectively.
+
+Automation adapters may request structured output. Preserve, for every finding,
+the severity, concise title, standalone evidence and correction body, repository-
+relative path, one-based diff line, and `RIGHT` or `LEFT` side. The adapter may
+render these fields as GitHub inline comments, but it must not change severity or
+invent findings.
 
 Reject suspected findings when the repository evidence disproves them. Do not
 include speculative risks, generic advice, preferences presented as defects, or
@@ -173,8 +207,7 @@ Use for material problems that should normally be corrected before merge:
 - duplicated ownership or unclear source of truth;
 - divergence from an established project pattern without justification.
 
-A should-fix finding may be explicitly deferred only when the reviewer identifies
-a safe boundary and a concrete follow-up task.
+A real should-fix finding remains blocking even when a follow-up task exists.
 
 ### 🟢 Nits
 
@@ -184,14 +217,14 @@ Use sparingly for small, local improvements:
 - minor API or documentation inconsistencies;
 - small simplifications with an obvious benefit.
 
-Do not block merge on nits. Do not report formatter output or personal preferences.
+Nits block readiness under this repository's strict zero-finding policy. Use them
+sparingly and do not report formatter output or personal preferences.
 
 ## Required output
 
 Start with one verdict:
 
 - `REQUEST CHANGES`
-- `APPROVE WITH FOLLOW-UPS`
 - `APPROVE`
 
 Then report:
@@ -226,6 +259,9 @@ Use the same finding structure. Write `None` when empty.
 
 Keep each nit concise. Write `None` when empty.
 
+Every listed finding must also have a corresponding inline comment. Do not create
+an inline comment when there is no validated finding at that location.
+
 ### Rejected concerns
 
 List plausible concerns investigated and rejected when doing so helps prevent
@@ -238,17 +274,16 @@ reproduced.
 
 ### Merge assessment
 
-State whether the PR is ready for the user's review. Identify unresolved blockers,
-accepted follow-ups, and residual risks.
+State whether the PR is ready for the user's review. Identify unresolved findings
+and residual risks.
 
 ## Verdict rules
 
 - Any blocker produces `REQUEST CHANGES`.
-- A should-fix normally produces `REQUEST CHANGES`.
-- Use `APPROVE WITH FOLLOW-UPS` only when remaining should-fix items are safely
-  bounded and have an explicit follow-up task.
-- Use `APPROVE` when no blockers or should-fix findings remain.
-- Nits alone do not prevent `APPROVE`.
+- Any should-fix finding produces `REQUEST CHANGES`.
+- Any nit produces `REQUEST CHANGES`.
+- Use `APPROVE` only when no validated findings remain for the exact current head
+  SHA. A rejected concern must include evidence showing why it is not a finding.
 
 The verdict is advisory. Only the user may authorize merging, and this reviewer
 never merges a pull request.

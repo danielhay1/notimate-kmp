@@ -1,0 +1,7 @@
+interface:
+  display_name: "Google KMP Senior Developer"
+  short_description: "Senior KMP with Google-style conventions"
+  default_prompt: "Use $google-kmp-senior-developer to build, review, or commit Kotlin Multiplatform code with Google-style conventions."
+
+policy:
+  allow_implicit_invocation: true

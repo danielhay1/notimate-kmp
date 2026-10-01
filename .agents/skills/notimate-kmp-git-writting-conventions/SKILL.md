@@ -47,9 +47,10 @@ Examples:
 ## Body
 
 Commit messages and pull requests must include a title and a concise body. Use the
-shortest form that preserves the decision-relevant facts. Prefer one to three short
-paragraphs or a compact bullet list; expand only when risk or reviewability requires
-it.
+shortest form that preserves the decision-relevant facts. Commit bodies may use one
+to three short paragraphs or a compact list. Pull-request bodies use the repository
+template's `Summary`, `Validation`, and `Risks` sections so deterministic policy
+checks and reviewers see the same evidence.
 
 Summarize:
 
@@ -61,8 +62,10 @@ Summarize:
 - relevant limitations or follow-up work, when applicable.
 
 Do not repeat the title, enumerate changed files, narrate implementation steps, or
-include boilerplate sections with no content. Combine closely related facts and
-omit details that a reviewer can read directly from the diff.
+leave template comments and empty sections. Use `Not run: <reason>` when validation
+was not performed and `None identified.` when there is no known risk. Combine
+closely related facts and omit details that a reviewer can read directly from the
+diff.
 
 For UI changes, include screenshots or recordings only when they exist and use
 synthetic data. Never invent links, validation, screenshots, results, or product
