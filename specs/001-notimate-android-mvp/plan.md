@@ -107,3 +107,35 @@ external handoff; this foundation does not implement that adapter.
 - Retention policy for structured processed records.
 - Whether optional non-sensitive configuration sync ships in the first public release.
 - Post-MVP action types and trusted confirmation policies.
+
+## Task 007 Configuration Slice
+
+The Android-first configuration repository uses Room for settings, monitored
+application identifiers, Profiles, and their owned Automations. Keeping these in
+one database supports atomic selection, pause, source, and ownership updates.
+Shared APIs expose domain snapshots through Flow and main-safe suspend operations;
+Room entities, converters, relations, and schema remain in `:androidApp`.
+
+A missing installation initializes Personal with calendar suggestions enabled,
+`AlwaysReview`, and no monitored applications. Existing unreadable or invalid data
+causes a failure; it is not silently replaced. Profiles and Automations retain
+their explicit order. The selected Profile survives pause and restart. Deleting
+the selected Profile requires an existing replacement in the same transaction;
+the last Profile or a Profile's last Automation cannot be deleted.
+
+Capture observes complete committed configuration snapshots. Loading and storage
+failure deny source admission; task `008` must supply a real available processor
+before content can be read. The configuration observer is process-owned and stops
+on storage failure; the repository failure remains observable to other callers.
+Restart retries loading without deleting local data.
+
+The database lives in Android's no-backup directory, and automatic app backup is
+disabled. No sync, raw payload storage, queue, extraction, or UI is introduced.
+Configuration is retained until explicitly edited or Android app data is cleared.
+Application-level reset, proposal/activity storage, retention durations, proposal
+expiry, and clear-data scope need the next task `007` slice and approved policy.
+
+`03_UI_STATES_AND_CONTENT.md` lists an empty Profile state, while specification
+Requirement 7 and `AutomationProfile` require at least one Automation. This slice
+preserves the existing specification/domain invariant; empty Profile support
+requires a separate aligned product decision.
