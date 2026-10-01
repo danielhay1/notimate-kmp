@@ -38,10 +38,15 @@ live device capture/revocation and user merge remain unverified delivery steps.
 
 ## Phase 3: Persistence And Settings
 
-- [ ] Choose Android-first persistence strategy.
-- [ ] Implement settings, monitored-source, Profile, and Automation source of truth.
+- [x] Choose Room for the Android-first atomic configuration source of truth.
+- [x] Implement settings, monitored-source, Profile, and Automation source of truth.
 - [ ] Persist structured Proposals and Activity records only, not raw notification bodies.
 - [ ] Add retention policy for structured records.
+
+Task `007` is split into configuration first and structured proposal/activity storage
+after its dependency merge. Configuration validation and delivery evidence belong
+in the task packet. Automatic retention/deletion, expiry, and clear-data scope
+require an explicit product decision before the second slice.
 
 ## Phase 4: Extraction Pipeline
 

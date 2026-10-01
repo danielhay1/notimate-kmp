@@ -119,6 +119,19 @@ The first complete action journey is a calendar-event proposal. Reminders, finan
 5. Signing out stops future sync without deleting local Profiles and Automations.
 6. Sensitive free-text conditions remain local unless a separately specified client-side encryption design is implemented.
 
+## Local Configuration Persistence
+
+Task `007` first delivers Android-local settings, monitored applications, Profiles,
+and Automations through one atomic repository source of truth. Settings survive
+restart. A missing installation starts with Personal, calendar suggestions using
+`AlwaysReview`, and no selected sources. Invalid or unreadable existing storage
+must not be silently reset or admit notification content.
+
+Configuration remains local and is excluded from automatic platform backup.
+Optional account backup remains a separate explicit opt-in capability. Structured
+proposal/activity retention, expiry policy, and app-level clear-data behavior
+remain open decisions for the next persistence slice.
+
 ## Product Design Authority
 
 Approved screen, flow, state, domain, and design requirements live in `docs/product-design/`.
