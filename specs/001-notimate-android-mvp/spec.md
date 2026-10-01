@@ -135,3 +135,41 @@ remain open decisions for the next persistence slice.
 ## Product Design Authority
 
 Approved screen, flow, state, domain, and design requirements live in `docs/product-design/`.
+
+## Task 008 First Extraction Slice
+
+The first deterministic adapter accepts an English labeled block from minimized
+title/body: `Event:`, `Meeting:`, or `Appointment:` supplies a structured title;
+`Date:` accepts only `YYYY-MM-DD`; `Time:` accepts only 24-hour `HH:mm`; `Location:`
+is optional. Labels are case-insensitive, separated by newlines or semicolons.
+Missing fields and repeated or invalid date/time fields require review. Unknown
+labels or surrounding narrative are unsupported; unrelated content remains unknown,
+and empty content can be ignored. No relative-date, Hebrew-label, natural-language,
+duration, time-zone, or DST interpretation is implied. Structured titles may use
+Unicode; English/Hebrew UI and locale-aware display remain later UI requirements.
+
+Extractor output is advisory. The `calendar.v1` JSON contract requires exactly
+`schema`, `title`, `date`, `time`, `location`, and `ambiguousFields`. Calendar text
+fields may be null; ambiguity names use `TITLE`, `DATE`, `TIME`, or `LOCATION`.
+Unknown or duplicate keys, wrong types, invalid dates/times, duplicate ambiguity
+names, or unsupported schemas are rejected without exposing input in errors.
+
+Inputs are limited to the existing capture bounds (256 title and 4096 body
+characters); extracted title/location fields allow at most 256 characters without
+control characters. Model output is limited to 8192 characters. These are processing
+bounds, not retention policies. Confidence assessment, threshold, sensitivity,
+creation time, and nullable expiry are explicit caller policies; this slice adds
+no runtime confidence calibration, expiry duration, or retention default.
+
+The shared pipeline rechecks selected-Profile/source admission, Automation
+conditions, schema validity, and conservative policy before producing a local
+Proposal or typed ignore/review/defer/failure outcome. Low-confidence or sensitive
+complete candidates cannot become Ready proposals. Required-field uncertainty
+produces NeedsReview. Ready still requires user confirmation before external writes.
+
+Optional inference states and resource gates are contracts only. Basic rules work
+without local AI. Heavy work requires Ready plus known available memory, battery,
+and thermal signals; otherwise rules run first. A deferred outcome retains no raw
+input and schedules no retry. No model runtime, download, platform resource probes,
+or WorkManager is installed. Production capture remains unavailable until task
+007 supplies durable structured proposal/activity ownership and approved policies.

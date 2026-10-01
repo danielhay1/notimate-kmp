@@ -20,9 +20,8 @@
 - [x] Define privacy redaction policy and tests.
 - [x] Add shared tests for classification, Profile invariants, agent policy routing, proposal lifecycle, and validation.
 
-Implementation and Android-host validation are complete on the task branch;
-independent PR review and user merge remain delivery gates. See task packet `005`
-for observed commands and intentionally deferred platform integration.
+Task `005` merged into `dev` through PR #6. See its task packet for observed
+commands and intentionally deferred platform integration.
 
 ## Phase 2: Android Notification Capture
 
@@ -34,7 +33,7 @@ for observed commands and intentionally deferred platform integration.
 
 Task `006` implements the capture boundary with fail-closed production wiring.
 Settings and local extraction remain tasks `007` and `008`. Host validation passed;
-live device capture/revocation and user merge remain unverified delivery steps.
+live device capture/revocation remains unverified. Task `006` merged through PR #7.
 
 ## Phase 3: Persistence And Settings
 
@@ -44,19 +43,27 @@ live device capture/revocation and user merge remain unverified delivery steps.
 - [ ] Add retention policy for structured records.
 
 Task `007` is split into configuration first and structured proposal/activity storage
-after its dependency merge. Configuration validation and delivery evidence belong
+after its dependency merge. Configuration merged through PR #8; task `007` remains
+incomplete. Configuration validation and delivery evidence belong
 in the task packet. Automatic retention/deletion, expiry, and clear-data scope
 require an explicit product decision before the second slice.
 
 ## Phase 4: Extraction Pipeline
 
-- [ ] Add `NotificationExtractor` interface.
-- [ ] Implement rule-based calendar extractor as the first architecture-validating adapter.
-- [ ] Add strict schema/parser contract for future local model output.
-- [ ] Validate extractor output before creating Proposals.
+- [x] Add `NotificationExtractor` interface.
+- [x] Implement rule-based calendar extractor as the first architecture-validating adapter.
+- [x] Add strict schema/parser contract for future local model output.
+- [x] Validate extractor output before creating Proposals.
 - [ ] Add WorkManager only for deferred work that needs no durable raw payload.
-- [ ] Add memory/battery/thermal gate before heavy extraction.
-- [ ] Model ready, downloadable, downloading, unavailable, and unsupported local-AI states.
+- [x] Add memory/battery/thermal gate contract before heavy extraction.
+- [x] Model ready, downloadable, downloading, unavailable, and unsupported local-AI states.
+
+Task `008` first delivers shared contracts and explicit conservative outcomes using
+the bounded grammar in `spec.md`. Actual inference, download, resource probes and
+thresholds, confidence calibration, and production capture/storage integration
+remain follow-up slices. WorkManager is conditional: no raw content is retained
+and no retry is scheduled in this slice. Delivery/validation evidence belongs in
+task packet `008`; task `007` structured storage remains a dependency for activation.
 
 ## Phase 5: Permission And Proposal UI
 

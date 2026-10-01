@@ -53,7 +53,8 @@ The notification agent is a local policy engine. Its job is to decide, on device
 - `Draft`: useful notifications can become local structured proposals.
 - `Review`: sensitive, ambiguous, low-confidence, or schema-invalid results require user review.
 - `ConfirmAndWrite`: external writes require explicit user confirmation; the calendar MVP delegates final save to Android Calendar.
-- `Defer`: constrained device state moves local processing to WorkManager.
+- `Defer`: constrained work has an explicit outcome; WorkManager is conditional on
+  separately approved privacy-safe structured retry data.
 
 No MVP path should send raw notification text to a network service or allow model output to bypass schema and policy validation.
 
@@ -139,3 +140,37 @@ expiry, and clear-data scope need the next task `007` slice and approved policy.
 Requirement 7 and `AutomationProfile` require at least one Automation. This slice
 preserves the existing specification/domain invariant; empty Profile support
 requires a separate aligned product decision.
+
+## Task 008 Shared Extraction Slice
+
+`domain/extraction` in commonMain owns the synchronous extractor contract,
+deterministic labeled-block adapter, strict streaming JSON decoder, resource-gate
+contracts, and policy-to-Proposal pipeline. Tests mirror these files in commonTest.
+The JSON library uses a custom decoder without adding a serialization compiler
+plugin. Duplicate keys are rejected during decoding; parser exceptions never leave
+the boundary, and debug input is disabled in decoder exceptions.
+
+The pipeline resolves one explicitly requested Automation in the selected Profile
+from a single configuration snapshot. It retains neither raw input nor a queue.
+It returns structured local results to its caller; future storage must commit them
+before production capture is enabled. Calendar origin labels are independent
+snapshots. No repository, UI state holder, notification alerts, or Calendar adapter
+is added; existing Room configuration/Flow and fail-closed capture wiring remain.
+
+Confidence, sensitivity, clock, expiry, and threshold are injected without runtime
+defaults. Complete candidates routed to review by policy produce a content-free
+review outcome; incomplete/ambiguous fields may produce NeedsReview proposals.
+Every Calendar candidate, including future adapter output, is schema-validated.
+
+Heavy adapters require Ready and all resource readings Available. Unknown readings
+deny heavy work. Deterministic fallback can still produce a Proposal, ignore, or
+review outcome; unsupported fallback becomes a typed unavailable/deferred/failure
+outcome. Cancellation propagates; ordinary adapter failure exposes no exception
+details and attempts deterministic fallback for heavy work.
+
+Parsing/language and schema limits are defined in the specification's Task 008
+section. Android time-zone/DST resolution stays with task 010. Actual local-AI
+runtime/download support, Android resource probes/thresholds, privacy-safe scheduled
+retry, calibrated confidence/sensitivity detection, and production capture/storage
+integration remain separately approved slices. WorkManager is intentionally absent
+because there is no approved durable retry payload or structured result repository.
