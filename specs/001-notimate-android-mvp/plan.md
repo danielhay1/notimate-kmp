@@ -32,8 +32,11 @@ The notification agent is a local policy engine. Its job is to decide, on device
 ## Data Flow
 
 1. `NotificationListenerService` receives a notification event.
-2. Android mapper converts OS data into a minimized shared `ObservedNotification`.
-3. Repository applies monitored-source and active-profile policy and stores privacy-safe processing metadata.
+2. Capture checks access, pause, monitored-source membership, and selected enabled
+   Automation source selectors before reading content. Android maps only admitted
+   input into a minimized shared `ObservedNotification`.
+3. Repository supplies an atomic local configuration snapshot and owns privacy-safe
+   processing metadata.
 4. Local agent policy checks source, active Automation conditions, sensitivity, device conditions, and user settings.
 5. Classifier routes the event to ignored, possible-calendar-event, unknown, or review-needed.
 6. Deterministic extraction or local model inference runs only when device conditions are safe.

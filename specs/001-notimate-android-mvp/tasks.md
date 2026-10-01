@@ -26,11 +26,15 @@ for observed commands and intentionally deferred platform integration.
 
 ## Phase 2: Android Notification Capture
 
-- [ ] Add `NotificationListenerService` declaration and permission metadata.
-- [ ] Implement Android notification-to-domain mapper.
-- [ ] Implement listener connection diagnostics without logging notification bodies.
-- [ ] Add monitored-source filtering and active-profile lookup.
-- [ ] Add unit tests for mapper and filtering behavior.
+- [x] Add `NotificationListenerService` declaration and permission metadata.
+- [x] Implement Android notification-to-domain mapper.
+- [x] Implement listener connection diagnostics without logging notification bodies.
+- [x] Add monitored-source filtering and active-profile lookup.
+- [x] Add unit tests for mapper and filtering behavior.
+
+Task `006` implements the capture boundary with fail-closed production wiring.
+Settings and local extraction remain tasks `007` and `008`. Host validation passed;
+live device capture/revocation and user merge remain unverified delivery steps.
 
 ## Phase 3: Persistence And Settings
 
