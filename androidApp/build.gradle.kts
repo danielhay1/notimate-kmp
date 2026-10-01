@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
 
     implementation(libs.compose.uiToolingPreview)
+    testImplementation(libs.kotlin.testJunit)
     debugImplementation(libs.compose.uiTooling)
 }
 
