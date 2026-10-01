@@ -78,6 +78,26 @@ Extractor implementations return strict sealed results. They do not execute side
 - Do not add UI tests for the MVP. Keep tests focused on logic, business rules, mappers, validation, persistence choices, and privacy behavior.
 - Avoid testing framework/library behavior directly.
 
+## Shared Domain Foundation Mapping
+
+Task `005` implements pure contracts under `shared/src/commonMain/.../domain` and
+focused tests in `commonTest`. Android host tests exercise those common contracts
+for the Android-first MVP; this does not assert iOS runtime verification.
+
+Source admission accepts only source metadata and must run before reading content.
+Policy results are advisory and never execute external writes. Profile selection
+is separate from global pause. Proposals retain an immutable origin snapshot,
+typed ambiguity markers, and local calendar fields; Activity stores typed outcomes
+and local identifiers, not free-text content. Redacted string representations are
+defense in depth, not permission to log models or persist raw inputs.
+
+Proposal creation starts at `Draft`; validation yields `Ready` or `NeedsReview`.
+Dismissal, confirmed successful UI handoff, and expiry are terminal. Failure and
+deferral remain retryable without durable raw payloads. Expiry and confidence
+thresholds are injected rather than introducing unapproved defaults. The Android
+Calendar adapter will resolve wall-clock fields and time-zone/DST ambiguity before
+external handoff; this foundation does not implement that adapter.
+
 ## Open Decisions
 
 - Final on-device inference API and model packaging.

@@ -6,19 +6,23 @@
 - [x] Add Gradle wrapper, version catalog, and daemon JVM configuration.
 - [x] Add Android and iOS app shells from the KMP scaffold.
 - [x] Add repository guidance and spec-driven development files.
-- [ ] Run and document baseline validation commands.
+- [x] Run and document baseline validation commands.
 
 ## Phase 1: Shared Domain Foundation
 
-- [ ] Define minimized `ObservedNotification` domain model.
-- [ ] Define classification types: possible-calendar-event, ignored, unknown, review-needed.
-- [ ] Define agent autonomy levels: ignore, draft, review, confirm-and-write, defer.
-- [ ] Define `AutomationProfile` and Automation models with one-active-profile invariants.
-- [ ] Define agent policy rules for sensitivity, confidence, monitored sources, active Automations, and device constraints.
-- [ ] Define calendar Proposal lifecycle and editable structured fields.
-- [ ] Define privacy-safe Activity record models.
-- [ ] Define privacy redaction policy and tests.
-- [ ] Add shared tests for classification, Profile invariants, agent policy routing, proposal lifecycle, and validation.
+- [x] Define minimized `ObservedNotification` domain model.
+- [x] Define classification types: possible-calendar-event, ignored, unknown, review-needed.
+- [x] Define agent autonomy levels: ignore, draft, review, confirm-and-write, defer.
+- [x] Define `AutomationProfile` and Automation models with one-active-profile invariants.
+- [x] Define agent policy rules for sensitivity, confidence, monitored sources, active Automations, and device constraints.
+- [x] Define calendar Proposal lifecycle and editable structured fields.
+- [x] Define privacy-safe Activity record models.
+- [x] Define privacy redaction policy and tests.
+- [x] Add shared tests for classification, Profile invariants, agent policy routing, proposal lifecycle, and validation.
+
+Implementation and Android-host validation are complete on the task branch;
+independent PR review and user merge remain delivery gates. See task packet `005`
+for observed commands and intentionally deferred platform integration.
 
 ## Phase 2: Android Notification Capture
 
