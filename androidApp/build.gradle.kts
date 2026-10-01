@@ -20,6 +20,11 @@ dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
 
+// UTP's gRPC dependencies require patched, aligned Netty modules on the host test classpath.
+configurations.matching { it.name.startsWith("unified-test-platform-") }.configureEach {
+    dependencies.add(project.dependencies.platform(libs.netty.bom.get()))
+}
+
 android {
     namespace = "com.hayduck.notemate"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
