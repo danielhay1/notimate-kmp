@@ -167,9 +167,53 @@ Proposal or typed ignore/review/defer/failure outcome. Low-confidence or sensiti
 complete candidates cannot become Ready proposals. Required-field uncertainty
 produces NeedsReview. Ready still requires user confirmation before external writes.
 
-Optional inference states and resource gates are contracts only. Basic rules work
-without local AI. Heavy work requires Ready plus known available memory, battery,
-and thermal signals; otherwise rules run first. A deferred outcome retains no raw
-input and schedules no retry. No model runtime, download, platform resource probes,
-or WorkManager is installed. Production capture remains unavailable until task
-007 supplies durable structured proposal/activity ownership and approved policies.
+Basic rules work without local AI. Heavy work requires Ready plus known available
+memory, battery, and thermal signals; otherwise deterministic fallback runs. A
+deferred outcome retains no raw input and schedules no retry. Production capture
+remains unavailable until task 007 supplies durable structured proposal/activity
+ownership and approved policies.
+
+## Task 008 Local Model Interpretation
+
+The approved extension makes an on-device model the primary interpreter when it
+is provisioned and resources permit. It receives only the admitted, bounded title
+and body, as untrusted JSON data, plus caller-resolved local date/time at posting,
+time-zone identifier, and locale. No conversation history, tools, network request,
+raw storage, or automatic model download is part of inference.
+
+`notification.v1` requires exactly `schema`, `classification`, `confidence`,
+`isSensitive`, and `suggestedAction`. Classification is independent of action:
+`POSSIBLE_CALENDAR_EVENT`, `PROMOTIONAL`, `IGNORED`, `UNKNOWN`, or `REVIEW_NEEDED`.
+Confidence must be a JSON number in 0..1; sensitivity must be a JSON boolean.
+The tentative model score can only lower the caller's confidence assessment, and
+model sensitivity can only add review requirements. Calibration remains unqualified.
+
+The only supported suggestion is `{type: calendar_event, calendar: <calendar.v1>}`.
+A calendar classification requires this payload; other classifications require
+null. Unknown action types, duplicate keys at every level, mismatched classifications,
+invalid nested schemas, or malformed output cannot create proposals. Matching promotion
+classification currently yields review, including for an Ignore Automation; no
+promotion filtering, source notification cancellation, or new external action ships.
+
+Future actions add a typed suggestion, strict payload decoder and response-schema
+branch, policy mapping, and proposal outcome. They retain source/Automation admission,
+resource checks, validation, and confirmation. Unknown versions/actions fail closed.
+Model interpretation never changes the user's configured Automation or executes it.
+
+Relative dates may be interpreted against explicit posting context; uncertain facts
+remain null and marked ambiguous. Absolute dates/times are validated independently.
+Android time-zone/DST resolution and external handoff remain task 010.
+
+Android uses pinned LiteRT-LM 0.17.1 with CPU inference on supported 64-bit processes.
+The caller supplies an immutable, separately provisioned `.litertlm` file under
+app-private no-backup storage, its verified SHA256, and model/device-qualified context,
+output, memory, battery, thermal, thread, size, and timeout limits. No default model,
+automatic downloader, UI, or new network permission is introduced. Unknown resource
+readings deny heavy inference; rules remain usable on unsupported devices.
+
+Each request owns a fresh conversation, with native logs and cache disabled. Busy
+admission does not queue raw requests. Native cancellation is requested on timeout,
+caller cancellation, or output overflow; cleanup waits for native completion before
+closing JNI resources. Native initialization and cancellation acknowledgement can
+exceed the deadline. A stalled runtime remains busy rather than deleting active
+resources; this limitation requires target-device qualification before activation.

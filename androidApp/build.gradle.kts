@@ -17,6 +17,7 @@ dependencies {
     implementation(projects.shared)
     implementation(libs.androidx.room.runtime)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.litertlm.android)
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.activity.compose)

@@ -26,20 +26,7 @@ class CalendarExtractionParser {
             // Tree parsing enforces separators; streaming decoding then rejects duplicate keys.
             json.parseToJsonElement(output)
             val decoded = json.decodeFromString(CalendarOutputDecoder, output)
-            if (decoded.schema != "calendar.v1") return invalid()
-            val date = decoded.date?.let(::parseCalendarDate)
-            val time = decoded.time?.let(::parseCalendarTime)
-            if ((decoded.date != null && date == null) || (decoded.time != null && time == null)) {
-                return invalid()
-            }
-            val ambiguity = decoded.ambiguousFields.map { name ->
-                CalendarField.entries.find { it.name == name } ?: return invalid()
-            }
-            if (ambiguity.size != ambiguity.distinct().size) return invalid()
-            val extraction = CalendarExtraction(
-                CalendarFields(decoded.title, date, time, decoded.location), ambiguity.toSet(),
-            )
-            if (extraction.isSchemaValid()) ExtractionResult.Calendar(extraction) else invalid()
+            decoded.toExtraction()?.let(ExtractionResult::Calendar) ?: invalid()
         } catch (_: SerializationException) {
             invalid()
         } catch (_: IllegalArgumentException) {
@@ -51,7 +38,7 @@ class CalendarExtractionParser {
         ExtractionResult.ReviewNeeded(ExtractionReviewReason.INVALID_OUTPUT)
 }
 
-private class CalendarOutput(
+internal class CalendarOutput(
     val schema: String,
     val title: String?,
     val date: String?,
@@ -60,9 +47,23 @@ private class CalendarOutput(
     val ambiguousFields: List<String>,
 )
 
+internal fun CalendarOutput.toExtraction(): CalendarExtraction? {
+    if (schema != "calendar.v1") return null
+    val parsedDate = date?.let(::parseCalendarDate)
+    val parsedTime = time?.let(::parseCalendarTime)
+    if ((date != null && parsedDate == null) || (time != null && parsedTime == null)) return null
+    val ambiguity = ambiguousFields.map { name ->
+        CalendarField.entries.find { it.name == name } ?: return null
+    }
+    if (ambiguity.size != ambiguity.distinct().size) return null
+    return CalendarExtraction(
+        CalendarFields(title, parsedDate, parsedTime, location), ambiguity.toSet(),
+    ).takeIf { it.isSchemaValid() }
+}
+
 // Streaming decoding preserves duplicate keys so they cannot silently replace earlier fields.
 @OptIn(ExperimentalSerializationApi::class)
-private object CalendarOutputDecoder : DeserializationStrategy<CalendarOutput> {
+internal object CalendarOutputDecoder : DeserializationStrategy<CalendarOutput> {
     private val nullableString = String.serializer().nullable
     private val strings = ListSerializer(String.serializer())
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("CalendarOutput") {

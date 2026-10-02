@@ -19,8 +19,10 @@ ksp = "2.3.12"
 coroutines = "1.11.0"
 serialization = "1.11.0"
 robolectric = "4.17"
+litertlm = "0.17.1"
 
 [libraries]
+litertlm-android = { module = "com.google.ai.edge.litertlm:litertlm-android", version.ref = "litertlm" }
 netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }

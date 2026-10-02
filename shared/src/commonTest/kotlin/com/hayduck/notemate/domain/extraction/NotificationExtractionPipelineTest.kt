@@ -15,7 +15,9 @@ import com.hayduck.notemate.domain.notification.NotificationClassification
 import com.hayduck.notemate.domain.notification.NotificationContent
 import com.hayduck.notemate.domain.notification.NotificationSource
 import com.hayduck.notemate.domain.notification.ObservedNotification
+import com.hayduck.notemate.domain.proposal.CalendarDate
 import com.hayduck.notemate.domain.proposal.CalendarFields
+import com.hayduck.notemate.domain.proposal.CalendarTime
 import com.hayduck.notemate.domain.proposal.ProposalIssue
 import com.hayduck.notemate.domain.proposal.ProposalState
 import kotlin.coroutines.cancellation.CancellationException
@@ -23,6 +25,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlinx.coroutines.test.runTest
 
 class NotificationExtractionPipelineTest {
     private val rules = RuleBasedCalendarExtractor()
@@ -37,7 +40,7 @@ class NotificationExtractionPipelineTest {
         DeviceResourceState.AVAILABLE, DeviceResourceState.AVAILABLE)
 
     @Test
-    fun validatedExplicitFieldsProduceReadyLocalProposalWithOriginSnapshot() {
+    fun validatedExplicitFieldsProduceReadyLocalProposalWithOriginSnapshot() = runTest {
         val result = assertIs<NotificationExtractionOutcome.Proposal>(process(rules))
         assertEquals(ProposalState.READY, result.proposal.state)
         assertEquals("personal", result.proposal.origin.profileId)
@@ -51,7 +54,7 @@ class NotificationExtractionPipelineTest {
     }
 
     @Test
-    fun missingAndInvalidFieldsProduceNeedsReviewProposal() {
+    fun missingAndInvalidFieldsProduceNeedsReviewProposal() = runTest {
         val result = assertIs<NotificationExtractionOutcome.Proposal>(process(rules,
             input = notification.copy(content = NotificationContent("Meeting: Synthetic demo",
                 "Date: tomorrow; Time: 14:30"))))
@@ -61,7 +64,7 @@ class NotificationExtractionPipelineTest {
     }
 
     @Test
-    fun lowConfidenceSensitivityAndInvalidSchemaCannotProduceReadyProposal() {
+    fun lowConfidenceSensitivityAndInvalidSchemaCannotProduceReadyProposal() = runTest {
         assertEquals(review(ExtractionReviewReason.POLICY_REVIEW), process(rules,
             confidence = assessment.copy(confidence = 0.7)))
         assertEquals(review(ExtractionReviewReason.POLICY_REVIEW), process(rules,
@@ -75,7 +78,7 @@ class NotificationExtractionPipelineTest {
     }
 
     @Test
-    fun unavailableConfigurationAndDeniedSourcesNeverInvokeExtraction() {
+    fun unavailableConfigurationAndDeniedSourcesNeverInvokeExtraction() = runTest {
         val forbidden = adapter(false) { error("Must not extract") }
         assertEquals(review(ExtractionReviewReason.CONFIGURATION_UNAVAILABLE),
             process(forbidden, config = null))
@@ -91,7 +94,7 @@ class NotificationExtractionPipelineTest {
     }
 
     @Test
-    fun selectedAutomationConditionsAndActionsStillControlRouting() {
+    fun selectedAutomationConditionsAndActionsStillControlRouting() = runTest {
         assertEquals(NotificationExtractionOutcome.Ignored, process(rules,
             config = configuration(action = AutomationAction.IGNORE)))
         assertEquals(NotificationExtractionOutcome.Ignored, process(rules,
@@ -102,7 +105,7 @@ class NotificationExtractionPipelineTest {
     }
 
     @Test
-    fun basicRulesRemainAvailableInEveryLocalAiStateAndOnConstrainedDevices() {
+    fun basicRulesRemainAvailableInEveryLocalAiStateAndOnConstrainedDevices() = runTest {
         LocalAiState.entries.forEach { state ->
             assertIs<NotificationExtractionOutcome.Proposal>(process(rules, ai = state,
                 device = available.copy(memory = DeviceResourceState.CONSTRAINED)))
@@ -110,7 +113,7 @@ class NotificationExtractionPipelineTest {
     }
 
     @Test
-    fun heavyWorkNeverRunsWithoutReadyCapabilityAndAllAvailableResources() {
+    fun heavyWorkNeverRunsWithoutReadyCapabilityAndAllAvailableResources() = runTest {
         var calls = 0
         val heavy = adapter(true) { calls++; rules.extract(it) }
         LocalAiState.entries.filter { it != LocalAiState.READY }.forEach { state ->
@@ -130,7 +133,7 @@ class NotificationExtractionPipelineTest {
     }
 
     @Test
-    fun unsupportedFallbackReturnsExplicitUnavailableDeferredOrFailedOutcome() {
+    fun unsupportedFallbackReturnsExplicitUnavailableDeferredOrFailedOutcome() = runTest {
         val input = notification.copy(content = NotificationContent("Synthetic message", null))
         val heavy = adapter(true) { error("Heavy work must not run") }
         listOf(LocalAiState.DOWNLOAD_REQUIRED, LocalAiState.DOWNLOADING,
@@ -149,7 +152,7 @@ class NotificationExtractionPipelineTest {
     }
 
     @Test
-    fun extractorFailuresUseRulesWhenPossibleButCancellationPropagates() {
+    fun extractorFailuresUseRulesWhenPossibleButCancellationPropagates() = runTest {
         val failed = adapter(true) { error("Synthetic adapter failure") }
         assertIs<NotificationExtractionOutcome.Proposal>(process(failed))
         assertEquals(NotificationExtractionOutcome.Failed, process(failed,
@@ -162,7 +165,7 @@ class NotificationExtractionPipelineTest {
     }
 
     @Test
-    fun inputLimitsUnknownAndUnsupportedGrammarRemainExplicit() {
+    fun inputLimitsUnknownAndUnsupportedGrammarRemainExplicit() = runTest {
         assertEquals(review(ExtractionReviewReason.INPUT_LIMIT), process(rules,
             input = notification.copy(content = NotificationContent("a".repeat(257), null))))
         assertEquals(review(ExtractionReviewReason.UNSUPPORTED_FORMAT), process(rules,
@@ -175,7 +178,7 @@ class NotificationExtractionPipelineTest {
     }
 
     @Test
-    fun captureAvailabilityGateKeepsContentUnreadUntilStructuredStorageIsAvailable() {
+    fun captureAvailabilityGateKeepsContentUnreadUntilStructuredStorageIsAvailable() = runTest {
         val settings = configuration().asCaptureSettings()
         val coordinator = NotificationCaptureCoordinator({ settings },
             NotificationCaptureSink { error("No durable destination") }, { false })
@@ -187,7 +190,7 @@ class NotificationExtractionPipelineTest {
     }
 
     @Test
-    fun confidenceAndExpiryRemainExplicitValidatedCallerPolicies() {
+    fun confidenceAndExpiryRemainExplicitValidatedCallerPolicies() = runTest {
         listOf(Double.NaN, Double.POSITIVE_INFINITY, -0.1, 1.1).forEach {
             assertFailsWith<IllegalArgumentException> { ExtractionAssessment(it, false) }
         }
@@ -199,7 +202,72 @@ class NotificationExtractionPipelineTest {
         assertEquals(200L, result.proposal.expiresAtEpochMilliseconds)
     }
 
-    private fun process(
+    @Test
+    fun localModelProducesCalendarProposalFromNarrativeThroughTheSamePolicy() = runTest {
+        val calendar = CalendarExtraction(CalendarFields("Synthetic meeting",
+            CalendarDate(2028, 3, 1), CalendarTime(14, 30)), emptySet())
+        val semantic = adapter(true) { ExtractionResult.Analysis(NotificationAnalysis(
+            NotificationClassification.POSSIBLE_CALENDAR_EVENT,
+            SuggestedNotificationAction.CalendarEvent(calendar), 0.95, false,
+        )) }
+        val narrative = notification.copy(content = NotificationContent(
+            "Synthetic invitation", "Let's meet tomorrow at 14:30.",
+        ))
+        val result = assertIs<NotificationExtractionOutcome.Proposal>(process(semantic,
+            input = narrative))
+        assertEquals(CalendarDate(2028, 3, 1), result.proposal.fields.date)
+        assertEquals(ProposalState.READY, result.proposal.state)
+        assertEquals(NotificationExtractionOutcome.Ignored, process(semantic, input = narrative,
+            config = configuration(action = AutomationAction.IGNORE)))
+    }
+
+    @Test
+    fun modelCannotRaiseCallerConfidenceOrClearCallerSensitivity() = runTest {
+        val calendar = CalendarExtraction(CalendarFields("Synthetic meeting",
+            CalendarDate(2028, 3, 1), CalendarTime(14, 30)), emptySet())
+        fun model(score: Double, sensitive: Boolean) = adapter(true) {
+            ExtractionResult.Analysis(NotificationAnalysis(
+                NotificationClassification.POSSIBLE_CALENDAR_EVENT,
+                SuggestedNotificationAction.CalendarEvent(calendar), score, sensitive,
+            ))
+        }
+        assertEquals(review(ExtractionReviewReason.POLICY_REVIEW), process(model(1.0, false),
+            confidence = assessment.copy(confidence = 0.7)))
+        assertEquals(review(ExtractionReviewReason.POLICY_REVIEW), process(model(0.7, false)))
+        assertEquals(review(ExtractionReviewReason.POLICY_REVIEW), process(model(1.0, false),
+            confidence = assessment.copy(isSensitive = true)))
+        assertEquals(review(ExtractionReviewReason.POLICY_REVIEW), process(model(1.0, true)))
+    }
+
+    @Test
+    fun promotionAndUnsupportedActionResultsCannotFilterNotifications() = runTest {
+        val promotion = adapter(true) { ExtractionResult.Analysis(NotificationAnalysis(
+            NotificationClassification.PROMOTIONAL, null, 0.95, false,
+        )) }
+        assertEquals(review(ExtractionReviewReason.POLICY_REVIEW), process(promotion))
+        assertEquals(review(ExtractionReviewReason.POLICY_REVIEW), process(promotion,
+            config = configuration(action = AutomationAction.IGNORE)))
+        val unsupported = adapter(true) {
+            ExtractionResult.ReviewNeeded(ExtractionReviewReason.UNSUPPORTED_ACTION)
+        }
+        assertEquals(review(ExtractionReviewReason.UNSUPPORTED_ACTION), process(unsupported))
+    }
+
+    @Test
+    fun runtimeUnavailabilityFallsBackButInvalidModelOutputRequiresReview() = runTest {
+        val unavailable = adapter(true) {
+            ExtractionResult.Unavailable(ExtractionReviewReason.INFERENCE_TIMED_OUT)
+        }
+        assertIs<NotificationExtractionOutcome.Proposal>(process(unavailable))
+        assertEquals(review(ExtractionReviewReason.INFERENCE_TIMED_OUT), process(unavailable,
+            input = notification.copy(content = NotificationContent("Synthetic narrative", null))))
+        val invalid = adapter(true) {
+            ExtractionResult.ReviewNeeded(ExtractionReviewReason.INVALID_OUTPUT)
+        }
+        assertEquals(review(ExtractionReviewReason.INVALID_OUTPUT), process(invalid))
+    }
+
+    private suspend fun process(
         extractor: NotificationExtractor,
         config: LocalConfiguration? = configuration(),
         input: ObservedNotification = notification,
@@ -222,12 +290,16 @@ class NotificationExtractionPipelineTest {
             "Other", true, NotificationSourceSelector.Application("other.app"), action))),
     ), "personal"), setOf(source.applicationId), false)
 
-    private fun adapter(heavy: Boolean, extract: (ObservedNotification) -> ExtractionResult):
-        NotificationExtractor = object : NotificationExtractor {
-            override val requiresHeavyWork: Boolean = heavy
-            override fun extract(notification: ObservedNotification): ExtractionResult =
-                extract(notification)
-        }
+    private fun adapter(
+        heavy: Boolean,
+        extract: suspend (ObservedNotification) -> ExtractionResult,
+    ): NotificationExtractor = object : NotificationExtractor {
+        override val requiresHeavyWork: Boolean = heavy
+        override suspend fun extract(
+            notification: ObservedNotification,
+            context: NotificationInterpretationContext?,
+        ): ExtractionResult = extract(notification)
+    }
 
     private fun review(reason: ExtractionReviewReason): NotificationExtractionOutcome =
         NotificationExtractionOutcome.ReviewNeeded(reason)

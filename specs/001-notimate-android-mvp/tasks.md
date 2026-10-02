@@ -57,13 +57,18 @@ require an explicit product decision before the second slice.
 - [ ] Add WorkManager only for deferred work that needs no durable raw payload.
 - [x] Add memory/battery/thermal gate contract before heavy extraction.
 - [x] Model ready, downloadable, downloading, unavailable, and unsupported local-AI states.
+- [x] Add asynchronous local inference and a strict classification/action envelope.
+- [x] Add the Android LiteRT-LM adapter, explicit resource probes, and provisioned-model checks.
+- [ ] Qualify a model and target device for inference quality, privacy, latency, and memory.
 
-Task `008` first delivers shared contracts and explicit conservative outcomes using
-the bounded grammar in `spec.md`. Actual inference, download, resource probes and
-thresholds, confidence calibration, and production capture/storage integration
-remain follow-up slices. WorkManager is conditional: no raw content is retained
-and no retry is scheduled in this slice. Delivery/validation evidence belongs in
-task packet `008`; task `007` structured storage remains a dependency for activation.
+Task `008` includes deterministic fallback plus the approved local model adapter
+and extensible typed classification/action boundary. Provisioning and resource
+limits are explicit; no model or target device is implicitly qualified. Model
+downloads/UI, confidence calibration, actual promotion filtering/new actions, and
+production capture/storage integration remain later slices. WorkManager remains
+conditional: no raw content is retained and no retry is scheduled. Delivery and
+validation evidence belongs in packet `008`; task `007` structured storage remains
+a dependency for activation.
 
 ## Phase 5: Permission And Proposal UI
 

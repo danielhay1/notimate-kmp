@@ -8,7 +8,10 @@ import com.hayduck.notemate.domain.proposal.CalendarFields
 class RuleBasedCalendarExtractor : NotificationExtractor {
     override val requiresHeavyWork: Boolean = false
 
-    override fun extract(notification: ObservedNotification): ExtractionResult {
+    override suspend fun extract(
+        notification: ObservedNotification,
+        context: NotificationInterpretationContext?,
+    ): ExtractionResult {
         if (!notification.isWithinExtractionLimits()) {
             return ExtractionResult.ReviewNeeded(ExtractionReviewReason.INPUT_LIMIT)
         }

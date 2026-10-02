@@ -50,8 +50,9 @@ enum class ExtractionDeferralReason { DEVICE_CONSTRAINED, LOCAL_AI_DEFERRED }
 
 /**
  * Resolves one selected Automation using an atomic configuration snapshot, without persistence.
- * Both adapters must honor [NotificationExtractor]'s transient-input contract. Heavy adapters must
- * run off the main thread. Callers own durable results before enabling production capture.
+ * Adapters honor [NotificationExtractor]'s transient-input contract and own their threads.
+ * Callers own durable results before enabling production capture. New action types extend the typed
+ * suggestion, decoder, and proposal mapping; they cannot bypass [AgentPolicy].
  */
 class NotificationExtractionPipeline(
     private val extractor: NotificationExtractor,
@@ -62,13 +63,14 @@ class NotificationExtractionPipeline(
         require(!fallback.requiresHeavyWork) { "Fallback must not require heavy work." }
     }
 
-    fun process(
+    suspend fun process(
         notification: ObservedNotification,
         configuration: LocalConfiguration?,
         request: ExtractionProposalRequest,
         assessment: ExtractionAssessment,
         device: ExtractionDeviceConditions,
         localAiState: LocalAiState,
+        context: NotificationInterpretationContext? = null,
     ): NotificationExtractionOutcome {
         if (configuration == null) return review(ExtractionReviewReason.CONFIGURATION_UNAVAILABLE)
         if (!configuration.asCaptureSettings().admits(notification.source)) {
@@ -84,13 +86,29 @@ class NotificationExtractionPipeline(
             return review(ExtractionReviewReason.INPUT_LIMIT)
         }
         val blocked = heavyWorkFallback(device, localAiState)
-        val result = if (blocked == null) runExtractor(extractor, notification)
-            else runExtractor(fallback, notification)
-        val recovered = if (result == ExtractionResult.Failed && extractor.requiresHeavyWork &&
-            blocked == null) runExtractor(fallback, notification) else result
-        val calendar = (recovered as? ExtractionResult.Calendar)?.extraction
-        val schemaValid = calendar?.isSchemaValid() ?: true
+        val result = if (blocked == null) runExtractor(extractor, notification, context)
+            else runExtractor(fallback, notification, context)
+        val canFallback = extractor.requiresHeavyWork && blocked == null
+        val recovered = if (canFallback && (result == ExtractionResult.Failed ||
+            result is ExtractionResult.Unavailable)
+        ) runExtractor(fallback, notification, context) else result
+        val analysis = (recovered as? ExtractionResult.Analysis)?.analysis
+        val calendar = when (recovered) {
+            is ExtractionResult.Calendar -> recovered.extraction
+            is ExtractionResult.Analysis -> when (val action = recovered.analysis.suggestedAction) {
+                is SuggestedNotificationAction.CalendarEvent -> action.calendar
+                null -> null
+            }
+            else -> null
+        }
+        val schemaValid = (analysis?.isSchemaValid() ?: true) &&
+            (calendar?.isSchemaValid() ?: true)
+        val confidence = minOf(
+            assessment.confidence, analysis?.confidence ?: assessment.confidence,
+        )
+        val isSensitive = assessment.isSensitive || analysis?.isSensitive == true
         val classification = when (recovered) {
+            is ExtractionResult.Analysis -> recovered.analysis.classification
             is ExtractionResult.Calendar -> NotificationClassification.POSSIBLE_CALENDAR_EVENT
             ExtractionResult.Ignored -> NotificationClassification.IGNORED
             ExtractionResult.Unknown -> NotificationClassification.UNKNOWN
@@ -101,8 +119,8 @@ class NotificationExtractionPipeline(
             configuration.profiles, automation.id,
             AgentPolicyInput(
                 classification = classification,
-                confidence = assessment.confidence,
-                isSensitive = assessment.isSensitive,
+                confidence = confidence,
+                isSensitive = isSensitive,
                 isAmbiguous = calendar?.let {
                     it.fields.validationIssues(it.ambiguousFields).isNotEmpty()
                 } ?: false,
@@ -110,28 +128,31 @@ class NotificationExtractionPipeline(
             ),
         )
         if (decision == AgentOutcome.IGNORE) return NotificationExtractionOutcome.Ignored
-        if (assessment.isSensitive) return review(ExtractionReviewReason.POLICY_REVIEW)
+        if (isSensitive) return review(ExtractionReviewReason.POLICY_REVIEW)
         if (!schemaValid) return review(ExtractionReviewReason.INVALID_OUTPUT)
+        if (calendar != null) {
+            if (decision == AgentOutcome.REVIEW &&
+                calendar.fields.validationIssues(calendar.ambiguousFields).isEmpty()
+            ) return review(ExtractionReviewReason.POLICY_REVIEW)
+            return NotificationExtractionOutcome.Proposal(CalendarProposal.draft(
+                request.proposalId,
+                ProposalOrigin(profile.id, profile.name, automation.id, automation.name,
+                    notification.source.applicationId, request.applicationName),
+                calendar.fields, request.createdAtEpochMilliseconds,
+                request.expiresAtEpochMilliseconds, calendar.ambiguousFields,
+            ).validate(request.createdAtEpochMilliseconds))
+        }
         return when (recovered) {
-            is ExtractionResult.Calendar -> {
-                if (decision == AgentOutcome.REVIEW &&
-                    recovered.extraction.fields.validationIssues(
-                        recovered.extraction.ambiguousFields,
-                    ).isEmpty()
-                ) return review(ExtractionReviewReason.POLICY_REVIEW)
-                NotificationExtractionOutcome.Proposal(CalendarProposal.draft(
-                    request.proposalId,
-                    ProposalOrigin(profile.id, profile.name, automation.id, automation.name,
-                        notification.source.applicationId, request.applicationName),
-                    recovered.extraction.fields, request.createdAtEpochMilliseconds,
-                    request.expiresAtEpochMilliseconds, recovered.extraction.ambiguousFields,
-                ).validate(request.createdAtEpochMilliseconds))
-            }
+            is ExtractionResult.Analysis -> review(ExtractionReviewReason.POLICY_REVIEW)
+            is ExtractionResult.Calendar -> review(ExtractionReviewReason.INVALID_OUTPUT)
             ExtractionResult.Ignored -> review(ExtractionReviewReason.POLICY_REVIEW)
-            ExtractionResult.Unknown -> blocked ?: if (result == ExtractionResult.Failed) {
-                NotificationExtractionOutcome.Failed
-            } else review(ExtractionReviewReason.UNSUPPORTED_FORMAT)
+            ExtractionResult.Unknown -> blocked ?: when (result) {
+                is ExtractionResult.Unavailable -> review(result.reason)
+                ExtractionResult.Failed -> NotificationExtractionOutcome.Failed
+                else -> review(ExtractionReviewReason.UNSUPPORTED_FORMAT)
+            }
             is ExtractionResult.ReviewNeeded -> review(recovered.reason)
+            is ExtractionResult.Unavailable -> review(recovered.reason)
             ExtractionResult.Failed -> NotificationExtractionOutcome.Failed
         }
     }
@@ -151,11 +172,12 @@ class NotificationExtractionPipeline(
         }
     }
 
-    private fun runExtractor(
+    private suspend fun runExtractor(
         adapter: NotificationExtractor,
         notification: ObservedNotification,
+        context: NotificationInterpretationContext?,
     ): ExtractionResult = try {
-        adapter.extract(notification)
+        adapter.extract(notification, context)
     } catch (cancellation: CancellationException) {
         throw cancellation
     } catch (_: Exception) {

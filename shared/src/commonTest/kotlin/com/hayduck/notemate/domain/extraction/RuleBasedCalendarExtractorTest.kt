@@ -12,12 +12,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlinx.coroutines.test.runTest
 
 class RuleBasedCalendarExtractorTest {
     private val extractor = RuleBasedCalendarExtractor()
 
     @Test
-    fun explicitEventBlockExtractsOnlyStructuredFields() {
+    fun explicitEventBlockExtractsOnlyStructuredFields() = runTest {
         val candidate = calendar("Meeting: Synthetic planning",
             "Date: 2028-02-29; Time: 14:30; Location: Synthetic room")
         assertEquals("Synthetic planning", candidate.fields.title)
@@ -29,14 +30,14 @@ class RuleBasedCalendarExtractorTest {
     }
 
     @Test
-    fun missingFieldsRemainExplicitlyIncomplete() {
+    fun missingFieldsRemainExplicitlyIncomplete() = runTest {
         val candidate = calendar(null, "Event: Synthetic demo")
         assertEquals(setOf(ProposalIssue.MISSING_DATE, ProposalIssue.MISSING_TIME),
             candidate.fields.validationIssues(candidate.ambiguousFields))
     }
 
     @Test
-    fun invalidOrUnsupportedDatesAndTimesAreNeverGuessed() {
+    fun invalidOrUnsupportedDatesAndTimesAreNeverGuessed() = runTest {
         listOf("2027-02-29", "0000-01-01", "2028-13-01", "02/03/2028", "tomorrow").forEach {
             val candidate = calendar("Appointment: Synthetic check", "Date: $it; Time: 24:00")
             assertEquals(null, candidate.fields.date)
@@ -49,7 +50,7 @@ class RuleBasedCalendarExtractorTest {
     }
 
     @Test
-    fun repeatedFieldsNeverChooseAnArbitraryValue() {
+    fun repeatedFieldsNeverChooseAnArbitraryValue() = runTest {
         val candidate = calendar("Meeting: Synthetic first", "Event: Synthetic second; " +
             "Date: 2028-01-01; Date: 2028-01-02; Time: 14:30; Location: A; Location: B")
         assertEquals(null, candidate.fields.title)
@@ -60,7 +61,7 @@ class RuleBasedCalendarExtractorTest {
     }
 
     @Test
-    fun narrativeTimeZonesAndUnrelatedContentUseFallback() {
+    fun narrativeTimeZonesAndUnrelatedContentUseFallback() = runTest {
         assertEquals(ExtractionResult.Unknown, extractor.extract(notification("Synthetic message")))
         listOf("Timezone: UTC", "Tomorrow works", "Duration: 30").forEach {
             assertEquals(ExtractionResult.ReviewNeeded(ExtractionReviewReason.UNSUPPORTED_FORMAT),
@@ -70,7 +71,7 @@ class RuleBasedCalendarExtractorTest {
     }
 
     @Test
-    fun limitsAndControlCharactersFailWithoutLeakingContent() {
+    fun limitsAndControlCharactersFailWithoutLeakingContent() = runTest {
         assertEquals(ExtractionResult.ReviewNeeded(ExtractionReviewReason.INPUT_LIMIT),
             extractor.extract(notification("a".repeat(257))))
         assertEquals(ExtractionResult.ReviewNeeded(ExtractionReviewReason.INPUT_LIMIT),
@@ -79,7 +80,7 @@ class RuleBasedCalendarExtractorTest {
             extractor.extract(notification("Event: Synthetic\u0001demo")))
     }
 
-    private fun calendar(title: String?, body: String?): CalendarExtraction =
+    private suspend fun calendar(title: String?, body: String?): CalendarExtraction =
         assertIs<ExtractionResult.Calendar>(extractor.extract(notification(title, body))).extraction
 
     private fun notification(title: String?, body: String? = null): ObservedNotification =

@@ -77,6 +77,7 @@ class AgentPolicy(private val minimumConfidence: Double) {
         }
 
         return when (input.classification) {
+            NotificationClassification.PROMOTIONAL -> AgentOutcome.REVIEW
             NotificationClassification.UNKNOWN,
             NotificationClassification.REVIEW_NEEDED -> AgentOutcome.REVIEW
             NotificationClassification.IGNORED -> AgentOutcome.IGNORE

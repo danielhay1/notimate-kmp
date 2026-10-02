@@ -7,7 +7,10 @@ import com.hayduck.notemate.domain.proposal.CalendarFields
 /** Local extraction; raw input must not escape, be logged, or cause side effects. */
 interface NotificationExtractor {
     val requiresHeavyWork: Boolean
-    fun extract(notification: ObservedNotification): ExtractionResult
+    suspend fun extract(
+        notification: ObservedNotification,
+        context: NotificationInterpretationContext? = null,
+    ): ExtractionResult
 }
 
 /** Advisory fields; adapter output must pass validation before proposal creation. */
@@ -22,10 +25,13 @@ class CalendarExtraction(
 }
 
 sealed interface ExtractionResult {
+    data class Analysis(val analysis: NotificationAnalysis) : ExtractionResult
     data class Calendar(val extraction: CalendarExtraction) : ExtractionResult
     data object Ignored : ExtractionResult
     data object Unknown : ExtractionResult
     data class ReviewNeeded(val reason: ExtractionReviewReason) : ExtractionResult
+    /** Runtime cannot interpret this input; deterministic fallback is permitted. */
+    data class Unavailable(val reason: ExtractionReviewReason) : ExtractionResult
     data object Failed : ExtractionResult
 }
 
@@ -36,6 +42,10 @@ enum class ExtractionReviewReason {
     POLICY_REVIEW,
     CONFIGURATION_UNAVAILABLE,
     LOCAL_AI_UNAVAILABLE,
+    CONTEXT_UNAVAILABLE,
+    INFERENCE_BUSY,
+    INFERENCE_TIMED_OUT,
+    UNSUPPORTED_ACTION,
 }
 
 internal const val MAXIMUM_NOTIFICATION_TITLE_LENGTH = 256
