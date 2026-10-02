@@ -39,6 +39,16 @@ class CalendarExtractionParserTest {
     }
 
     @Test
+    fun malformedObjectSeparatorsFailClosed() {
+        listOf(
+            valid.replace(", \"date\"", " \"date\""),
+            valid.replace(", \"date\"", "\"date\""),
+            valid.replace(", \"date\"", ",, \"date\""),
+            valid.replace("\"ambiguousFields\":[]}", "\"ambiguousFields\":[],}"),
+        ).forEach(::assertInvalid)
+    }
+
+    @Test
     fun malformedWrongTypesInvalidFieldsAndUnknownEnumsAreRejected() {
         listOf(
             "```json\n$valid\n```", valid + " trailing", valid.replace("null", "false"),

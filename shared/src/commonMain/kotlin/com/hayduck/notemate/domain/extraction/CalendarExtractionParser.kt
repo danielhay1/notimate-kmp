@@ -23,6 +23,8 @@ class CalendarExtractionParser {
     fun parse(output: String): ExtractionResult {
         if (output.length > MAXIMUM_MODEL_OUTPUT_LENGTH) return invalid()
         return try {
+            // Tree parsing enforces separators; streaming decoding then rejects duplicate keys.
+            json.parseToJsonElement(output)
             val decoded = json.decodeFromString(CalendarOutputDecoder, output)
             if (decoded.schema != "calendar.v1") return invalid()
             val date = decoded.date?.let(::parseCalendarDate)

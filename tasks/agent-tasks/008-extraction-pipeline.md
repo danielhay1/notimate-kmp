@@ -82,7 +82,7 @@ storage and policies exist, so no proposal is discarded as a successful capture.
 
 ## Observed Local Validation — 2026-10-02
 
-65 shared Android-host tests (23 new extraction tests) and 13 Android unit tests
+66 shared Android-host tests (24 new extraction tests) and 13 Android unit tests
 passed with zero failures or skips. Android lint and debug APK assembly passed,
 as did 23 CI-policy regression tests. Existing Gradle `androidLibrary` deprecation
 and native-library stripping notices did not fail validation.
