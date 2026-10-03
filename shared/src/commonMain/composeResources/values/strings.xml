@@ -1,0 +1,28 @@
+<resources>
+    <string name="feature_keys_title">Feature keys</string>
+    <string name="feature_keys_intro">Debug overrides are saved on this device when you continue.</string>
+    <string name="feature_keys_discarded">Some saved overrides no longer match these keys. Their defaults are shown.</string>
+    <string name="feature_keys_default">Default: %1$s</string>
+    <string name="feature_keys_value">Value (%1$s)</string>
+    <string name="feature_keys_invalid">Enter a valid %1$s value.</string>
+    <string name="feature_keys_continue">Continue</string>
+    <string name="feature_keys_saving">Saving…</string>
+    <string name="feature_keys_save_failed">Could not save changes. Try Continue again.</string>
+    <string name="feature_keys_load_failed">Could not load feature keys.</string>
+    <string name="feature_keys_retry">Retry</string>
+    <string name="feature_keys_loading">Loading feature keys…</string>
+    <string name="notification_testing_open">Test a local notification</string>
+    <string name="notification_testing_title">Notification testing</string>
+    <string name="notification_testing_intro">Use synthetic content. These notifications test delivery; NotiMate ignores its own notifications during capture.</string>
+    <string name="notification_testing_title_field">Title</string>
+    <string name="notification_testing_body_field">Body</string>
+    <string name="notification_testing_send">Send notification</string>
+    <string name="notification_testing_settings">Notification settings</string>
+    <string name="notification_testing_back">Back</string>
+    <string name="notification_testing_invalid">Enter a title (up to 256 characters) and body (up to 4096 characters).</string>
+    <string name="notification_testing_sent">Notification posted. Check the notification shade.</string>
+    <string name="notification_testing_permission">Allow notifications, then tap Send again.</string>
+    <string name="notification_testing_blocked">Notifications are blocked. Enable them in notification settings.</string>
+    <string name="notification_testing_failed">Could not post the notification. Try again.</string>
+    <string name="notification_testing_disabled">Notification testing is disabled. Enable its feature key on debug launch.</string>
+</resources>

@@ -1,0 +1,4 @@
+<resources>
+    <string name="notification_test_channel">Manual notification tests</string>
+    <string name="notification_test_hidden">Test notification</string>
+</resources>

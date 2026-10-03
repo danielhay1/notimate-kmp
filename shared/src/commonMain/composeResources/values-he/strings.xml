@@ -1,0 +1,28 @@
+<resources>
+    <string name="feature_keys_title">מפתחות תכונות</string>
+    <string name="feature_keys_intro">ערכי בדיקה נשמרים במכשיר לאחר לחיצה על המשך.</string>
+    <string name="feature_keys_discarded">חלק מהערכים השמורים אינם מתאימים למפתחות הנוכחיים. מוצגים ערכי ברירת המחדל שלהם.</string>
+    <string name="feature_keys_default">ברירת מחדל: %1$s</string>
+    <string name="feature_keys_value">ערך (%1$s)</string>
+    <string name="feature_keys_invalid">יש להזין ערך תקין מסוג %1$s.</string>
+    <string name="feature_keys_continue">המשך</string>
+    <string name="feature_keys_saving">שמירה…</string>
+    <string name="feature_keys_save_failed">לא ניתן לשמור את השינויים. יש ללחוץ שוב על המשך.</string>
+    <string name="feature_keys_load_failed">לא ניתן לטעון את מפתחות התכונות.</string>
+    <string name="feature_keys_retry">נסה שוב</string>
+    <string name="feature_keys_loading">טעינת מפתחות תכונות…</string>
+    <string name="notification_testing_open">בדיקת התראה מקומית</string>
+    <string name="notification_testing_title">בדיקת התראות</string>
+    <string name="notification_testing_intro">יש להשתמש בתוכן מלאכותי. ההתראות בודקות מסירה; NotiMate מתעלם מהתראות של עצמו בעת קליטה.</string>
+    <string name="notification_testing_title_field">כותרת</string>
+    <string name="notification_testing_body_field">תוכן</string>
+    <string name="notification_testing_send">שליחת התראה</string>
+    <string name="notification_testing_settings">הגדרות התראות</string>
+    <string name="notification_testing_back">חזרה</string>
+    <string name="notification_testing_invalid">יש להזין כותרת (עד 256 תווים) ותוכן (עד 4096 תווים).</string>
+    <string name="notification_testing_sent">ההתראה נשלחה. יש לבדוק את מגירת ההתראות.</string>
+    <string name="notification_testing_permission">יש לאפשר התראות ואז ללחוץ שוב על שליחה.</string>
+    <string name="notification_testing_blocked">ההתראות חסומות. יש לאפשר אותן בהגדרות ההתראות.</string>
+    <string name="notification_testing_failed">לא ניתן לשלוח את ההתראה. יש לנסות שוב.</string>
+    <string name="notification_testing_disabled">בדיקת התראות מושבתת. יש להפעיל את מפתח התכונה בהפעלת בדיקה.</string>
+</resources>

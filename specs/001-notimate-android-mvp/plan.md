@@ -209,3 +209,21 @@ Nano through ML Kit remains a possible foreground-only adapter: Google's current
 block inference while the app is in the background, including foreground services.
 Both would use the same shared advisory contract and validation; new runtime
 availability never bypasses policy or enables a new action.
+
+## Task 014 Developer Tooling
+
+`featurekeys` in commonMain owns typed values, JSON validation, the app-owned
+manager, startup ViewModel, and stateless editor/form UI. The JSON is a shared
+Compose file resource. Android build-type source sets select a debug editor launcher
+or normal release launcher; the app shell injects one manager into startup and
+feature consumers. Swift `#if DEBUG` supplies the iOS build flag to its shared host.
+Android private preferences and iOS UserDefaults store one typed override snapshot;
+release never accesses it. Continue publishes only after a successful save.
+
+The Android native sender and Activity live in debug sources. Both navigation and
+posting check the first feature key. Posting uses an in-context permission request,
+dedicated channel, and content-free public preview. Notification content stays
+transient in the form and is passed only to the OS. Existing own-package filtering
+and production capture remain unchanged. Pure shared and Android host tests cover
+configuration/state/persistence/platform decisions; manual simulator validation
+checks startup and delivery without adding UI tests.
