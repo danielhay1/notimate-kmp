@@ -19,10 +19,12 @@ import org.jetbrains.compose.resources.painterResource
 import note_mate.shared.generated.resources.Res
 import note_mate.shared.generated.resources.compose_multiplatform
 import note_mate.shared.generated.resources.ic_24dp
+import note_mate.shared.generated.resources.notification_testing_open
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 @Preview
-fun App() {
+fun App(onOpenNotificationTesting: (() -> Unit)? = null) {
     MaterialTheme {
         var showContent by remember { mutableStateOf(false) }
         Column(
@@ -34,6 +36,11 @@ fun App() {
         ) {
             Button(onClick = { showContent = !showContent }) {
                 Text("Click me!")
+            }
+            if (onOpenNotificationTesting != null) {
+                Button(onClick = onOpenNotificationTesting) {
+                    Text(stringResource(Res.string.notification_testing_open))
+                }
             }
             AnimatedVisibility(showContent) {
                 val greeting = remember { Greeting().greet() }

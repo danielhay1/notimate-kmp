@@ -234,3 +234,24 @@ caller cancellation, or output overflow; cleanup waits for native completion bef
 closing JNI resources. Native initialization and cancellation acknowledgement can
 exceed the deadline. A stalled runtime remains busy rather than deleting active
 resources; this limitation requires target-device qualification before activation.
+
+## Developer Feature Keys
+
+Task `014` adds one shared bundled JSON of typed feature defaults and an injected
+shared manager. Release loads only JSON defaults and opens the app. Debug startup
+shows every key, default, and editable effective value in a scrollable shared editor.
+Boolean values use switches; Int/Float/Double values use validated numeric fields;
+String values use text fields. Continue saves overrides separately, updates the
+manager, and enters the normal app. Overrides survive relaunches and app updates
+until edited, app data is cleared, or the app is uninstalled; the JSON never changes.
+Invalid defaults or unreadable storage block startup; failed saves allow retry.
+Stale or malformed overrides use current defaults with a visible notice.
+
+The initial `notificationTestingEnabled` boolean defaults to false. In Android debug
+builds it gates a manual title/body notification form and native posting. Permission
+requests occur on Send; denied or blocked notifications expose settings/retry. Posted
+notifications hide input in lock-screen public previews and open the normal app on
+tap. Form content is transient and validation uses synthetic input. The Android
+sender and its permission are absent from release. iOS shares keys and the debug
+editor but has no native sender in this slice. Own-package capture filtering and
+fail-closed production extraction remain unchanged. See `docs/feature-keys.md`.

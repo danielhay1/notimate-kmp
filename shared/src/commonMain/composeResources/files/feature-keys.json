@@ -1,0 +1,7 @@
+[
+  {
+    "key": "notificationTestingEnabled",
+    "type": "boolean",
+    "default": false
+  }
+]
