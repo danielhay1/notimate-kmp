@@ -128,9 +128,26 @@ restart. A missing installation starts with Personal, calendar suggestions using
 must not be silently reset or admit notification content.
 
 Configuration remains local and is excluded from automatic platform backup.
-Optional account backup remains a separate explicit opt-in capability. Structured
-proposal/activity retention, expiry policy, and app-level clear-data behavior
-remain open decisions for the next persistence slice.
+Optional account backup remains a separate explicit opt-in capability.
+
+## Local Results Persistence
+
+The approved interim task `007` policy retains structured Proposals and content-free
+Activity records until explicitly deleted. No automatic retention duration is added.
+Expiry remains nullable and caller-supplied; reaching an explicit deadline makes a
+Proposal non-actionable, and an expiry command records `Expired` without deleting
+its structured fields. No scheduler or default expiry duration is implied.
+
+Proposal origin labels are immutable snapshots independent of later configuration
+edits or deletion. Proposal commands and their typed Activity records commit
+atomically. A stale revision or backwards update clock is rejected. Existing invalid
+storage fails without resetting or skipping rows. All results stay local and outside
+automatic platform backup; raw notification text and model responses are excluded.
+
+Clearing Activity deletes only audit metadata, leaving Proposals and configuration
+intact. Explicit Proposal deletion checks the current revision and leaves existing
+Activity references intact. Full local reset and UI confirmation flows remain later
+slices; this repository exposes no account or cloud deletion.
 
 ## Product Design Authority
 
@@ -170,8 +187,8 @@ produces NeedsReview. Ready still requires user confirmation before external wri
 Basic rules work without local AI. Heavy work requires Ready plus known available
 memory, battery, and thermal signals; otherwise deterministic fallback runs. A
 deferred outcome retains no raw input and schedules no retry. Production capture
-remains unavailable until task 007 supplies durable structured proposal/activity
-ownership and approved policies.
+remains unavailable until durable structured proposal/activity ownership, production
+integration, and model/device qualification are complete.
 
 ## Task 008 Local Model Interpretation
 

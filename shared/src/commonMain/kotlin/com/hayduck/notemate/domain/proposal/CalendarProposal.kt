@@ -94,6 +94,35 @@ class CalendarProposal private constructor(
     override fun toString(): String = "CalendarProposal(state=$state, content=[REDACTED])"
 
     companion object {
+        /** Restores a structured local record without replaying commands or changing its state. */
+        fun restore(
+            id: String,
+            origin: ProposalOrigin,
+            fields: CalendarFields,
+            ambiguousFields: Set<CalendarField>,
+            explanation: ProposalExplanation,
+            state: ProposalState,
+            createdAtEpochMilliseconds: Long,
+            expiresAtEpochMilliseconds: Long?,
+        ): CalendarProposal {
+            val draft = draft(id, origin, fields, createdAtEpochMilliseconds,
+                expiresAtEpochMilliseconds, ambiguousFields)
+            require(state !in setOf(ProposalState.READY, ProposalState.HANDED_OFF) ||
+                draft.issues.isEmpty()) { "Ready proposals must have valid fields." }
+            require(state != ProposalState.NEEDS_REVIEW || draft.issues.isNotEmpty()) {
+                "Review proposals must have unresolved issues."
+            }
+            require(state != ProposalState.EXPIRED || expiresAtEpochMilliseconds != null) {
+                "Expired proposals must have an expiry."
+            }
+            require(state != ProposalState.DRAFT ||
+                explanation == ProposalExplanation.POSSIBLE_CALENDAR_EVENT) {
+                "Draft explanation is invalid."
+            }
+            return CalendarProposal(id, origin, fields, ambiguousFields, explanation, state,
+                createdAtEpochMilliseconds, expiresAtEpochMilliseconds)
+        }
+
         /** Creates an unvalidated draft; expiry policy belongs to the caller. */
         fun draft(
             id: String,

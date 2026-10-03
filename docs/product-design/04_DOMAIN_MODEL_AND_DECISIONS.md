@@ -153,6 +153,16 @@ Examples:
 
 Activity is local-only in the MVP.
 
+### Interim local retention policy
+
+Structured Proposals and Activity metadata remain until explicitly deleted. Expiry
+is nullable and caller-supplied; reaching it blocks Proposal actions, while recording
+Expired retains the structured fields. There is no default expiry duration or
+automatic deletion. Origin labels are snapshots unaffected by Profile changes.
+Clearing Activity preserves Proposals and configuration. Deleting a Proposal leaves
+existing Activity references intact. Full local reset and confirmation UI remain
+separate implementation slices.
+
 ## Optional account
 
 An Account is not the owner of core local data. It provides optional backup or future account services.
