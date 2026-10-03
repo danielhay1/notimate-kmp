@@ -1,6 +1,6 @@
 # 008 — Extraction Pipeline
 
-**Status:** Local model extension implemented; validation and independent review in progress
+**Status:** Local model extension merged through PR #9; model/device qualification pending
 **Depends on:** 006, 007
 **Expected branch:** `feature/extraction-pipeline` (base: `dev`)
 
@@ -38,8 +38,8 @@ states using an on-device pipeline.
 ## Approved First Slice
 
 PRs #6 (domain), #7 (capture), and #8 (configuration) are merged. Starting `dev`:
-`0df528d7cdfd6b558dcd89c27f5c99fba4e84bc5`. Task `007` proposal/activity storage,
-retention, expiry, and clear-data decisions remain incomplete.
+`0df528d7cdfd6b558dcd89c27f5c99fba4e84bc5`. Proposal/activity storage was deferred
+to the separately approved task `007` results slice following PR #9.
 
 commonMain owns `NotificationExtractor`, a deterministic English labeled-block
 extractor, strict `calendar.v1` JSON decoding/validation, local-AI/resource state
@@ -60,8 +60,8 @@ Basic rules work across every optional AI state and device constraint. Heavy wor
 requires Ready and known available memory/battery/thermal signals; otherwise rules
 run first. Deferred outcomes contain no raw input and promise no scheduled retry.
 The first slice introduced no model runtime/download or resource probes. The approved
-extension below adds runtime and probes. Production capture remains unavailable until
-structured storage and policies exist, so no proposal is discarded as a successful capture.
+extension below adds runtime and probes. Production capture remains unavailable pending
+structured storage, integration, and model/device qualification.
 
 ## Approved Local Model Extension — 2026-10-03
 
@@ -92,8 +92,8 @@ required; current host tests exercise fakes, not actual model accuracy/performan
 
 ## Remaining Slices
 
-- Task `007` structured proposal/activity repository and approved retention/expiry/
-  clear-data policies before enabling production capture.
+- Task `007` structured proposal/activity repository under its approved interim policy,
+  followed by production integration before enabling capture.
 - Model/device qualification, calibrated confidence/sensitivity, and demonstrated
   language/natural-date accuracy before production activation.
 - Model provisioning/download UI and privacy-safe scheduled retries.
@@ -141,4 +141,5 @@ on Mac CPU only. This is no Android benchmark or qualified budget.
 
 Models and the temporary experiment remained outside the repository. No real
 notification input or generated payload was saved or logged. Production activation,
-model/device qualification, independent review, and hosted checks remain separate gates.
+model/device qualification remain separate gates. PR #9 passed independent review and
+exact-head hosted checks before the user merged it into `dev` at `338d693`.

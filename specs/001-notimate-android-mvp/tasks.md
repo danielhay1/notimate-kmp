@@ -39,14 +39,15 @@ live device capture/revocation remains unverified. Task `006` merged through PR 
 
 - [x] Choose Room for the Android-first atomic configuration source of truth.
 - [x] Implement settings, monitored-source, Profile, and Automation source of truth.
-- [ ] Persist structured Proposals and Activity records only, not raw notification bodies.
-- [ ] Add retention policy for structured records.
+- [x] Persist structured Proposals and Activity records only, not raw notification bodies.
+- [x] Add retention policy for structured records.
 
-Task `007` is split into configuration first and structured proposal/activity storage
-after its dependency merge. Configuration merged through PR #8; task `007` remains
-incomplete. Configuration validation and delivery evidence belong
-in the task packet. Automatic retention/deletion, expiry, and clear-data scope
-require an explicit product decision before the second slice.
+Task `007` is split into configuration (merged through PR #8) and structured results.
+The user approved the results slice and interim retention policy on 2026-10-03:
+retain until explicitly deleted; preserve caller-supplied nullable expiry without
+automatic deletion; clear Activity preserves Proposals/configuration; Proposal
+deletion preserves Activity references. Full reset and local-control UI are deferred.
+Implementation and validation evidence belong in packet `007`.
 
 ## Phase 4: Extraction Pipeline
 
@@ -67,8 +68,8 @@ limits are explicit; no model or target device is implicitly qualified. Model
 downloads/UI, confidence calibration, actual promotion filtering/new actions, and
 production capture/storage integration remain later slices. WorkManager remains
 conditional: no raw content is retained and no retry is scheduled. Delivery and
-validation evidence belongs in packet `008`; task `007` structured storage remains
-a dependency for activation.
+validation evidence belongs in packet `008`. Results storage, production integration,
+and model/device qualification are separate dependencies for activation.
 
 ## Phase 5: Permission And Proposal UI
 

@@ -1,8 +1,8 @@
 # 007 — Persistence And Settings
 
-**Status:** Configuration slice implemented and locally validated; awaiting review and user merge
+**Status:** Configuration merged through PR #8; results implemented and locally validated
 **Depends on:** 005
-**Expected branch:** `feature/persistence-configuration` (base: `dev`)
+**Expected branch:** `feature/persistence-results` (base: `dev` at `338d693`)
 
 Before editing, verify the checked-out branch. If blocked by a mismatch, tell the
 task invoker. The approved Git plan authorizes task-scoped delivery under repository
@@ -28,8 +28,8 @@ automations, proposals, and privacy-safe activity.
 
 ## Done When
 
-- [ ] Durable ownership and retention behavior are deterministic and tested.
-- [ ] Settings survive restart without leaking sensitive payloads.
+- [x] Durable ownership and retention behavior are deterministic and tested.
+- [x] Settings survive restart without leaking sensitive payloads.
 
 ## Validation
 
@@ -48,19 +48,32 @@ without resetting it. Profile selection, pause, ownership, nonempty Profile rule
 and source admission are enforced across atomic mutations and restart.
 
 Capture consumes committed snapshots and denies content access before loading or
-after failure. The processor remains unavailable until task `008`; configuration
-persistence does not claim end-to-end analysis. Configuration is local-only in a
+after failure. The processor remains unavailable pending production integration and
+model/device qualification. Configuration is local-only in a
 no-backup database; automatic Android app backup is disabled.
 
 The UI authority lists an empty Profile state, but the specification and implemented
 domain require an Automation. This slice preserves the domain invariant and does
 not implement empty Profiles, extra display metadata, or UI management.
 
-Remaining task `007` work: structured proposal/activity storage with independent
-origin snapshots; approved retention and expiry policy; clear-activity versus
-proposal deletion versus full local reset semantics. No automatic deletion or
-app-level reset is introduced in this slice. Configuration remains until explicit
-edits or Android app-data clearing.
+Configuration remains until explicit edits or Android app-data clearing.
+
+## Approved Results Slice — 2026-10-03
+
+Following merged PR #9, the user approved structured proposal and privacy-safe
+Activity storage before the permission/Today UI slice. Shared domain APIs expose
+complete committed snapshots and main-safe operations. Android Room owns a separate
+no-backup results database, with immutable origin labels independent of configuration.
+Create and revision-guarded lifecycle changes atomically append typed audit metadata.
+Corrupt existing rows fail observation and mutations without resetting storage.
+
+Interim retention policy: keep records until explicitly deleted. Nullable expiry is
+caller-supplied; reaching it blocks actions, and an expiry command marks the Proposal
+Expired without deleting fields. No default duration, automatic deletion, or scheduler
+is introduced. Clear Activity preserves Proposals/configuration. Explicit Proposal
+deletion preserves Activity references. Full local reset and UI controls are deferred.
+Storage never executes provider work; production capture remains unavailable pending
+integration and model/device qualification. No UI tests are introduced.
 
 Android-first validation:
 
@@ -82,3 +95,18 @@ the redacted intended-file secret scan passed before commit.
 No device/emulator was connected. Installation, launch, and live notification
 capture/revocation are unverified. No UI or iOS tests were run. Independent review,
 exact-head hosted checks, and user merge remain delivery gates.
+
+## Observed Results Validation — 2026-10-03
+
+88 shared Android-host tests and 36 Android unit tests passed with zero failures,
+errors, or skips, including seven new shared policy tests and ten file-backed results
+tests. Android lint and debug APK assembly passed. All 24 CI-policy tests passed.
+Restart preserves every Proposal state, explanations, nullable expiry, independent
+origins, revision, and Activity metadata. Concurrency, stale writes, audit-collision
+rollback, atomic observation, clear/delete independence, and corrupt-data failure
+are covered. The initial JUnit signature issue was corrected before this passing run.
+
+No Android device/emulator was connected. Install, launch, live capture, and iOS
+runtime remain unverified; no UI tests were run. Redacted intended-diff secret
+scanning, independent review, exact-head hosted checks, and user merge are delivery
+gates. Production capture remains unavailable.

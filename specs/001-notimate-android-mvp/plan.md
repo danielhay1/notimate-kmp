@@ -104,8 +104,8 @@ external handoff; this foundation does not implement that adapter.
 
 ## Open Decisions
 
-- Final on-device inference API and model packaging.
-- Retention policy for structured processed records.
+- Qualified model and provisioning UX for the selected LiteRT-LM runtime.
+- User-facing retention controls beyond the approved retain-until-deleted policy.
 - Whether optional non-sensitive configuration sync ships in the first public release.
 - Post-MVP action types and trusted confirmation policies.
 
@@ -133,13 +133,41 @@ Restart retries loading without deleting local data.
 The database lives in Android's no-backup directory, and automatic app backup is
 disabled. No sync, raw payload storage, queue, extraction, or UI is introduced.
 Configuration is retained until explicitly edited or Android app data is cleared.
-Application-level reset, proposal/activity storage, retention durations, proposal
-expiry, and clear-data scope need the next task `007` slice and approved policy.
+Application-level reset and local-control UI remain separate slices.
 
 `03_UI_STATES_AND_CONTENT.md` lists an empty Profile state, while specification
 Requirement 7 and `AutomationProfile` require at least one Automation. This slice
 preserves the existing specification/domain invariant; empty Profile support
 requires a separate aligned product decision.
+
+## Task 007 Results Slice
+
+`domain/results` owns the platform-neutral repository contract, owned joint snapshot,
+revision guards, lifecycle commands, and content-free event mapping. Android owns
+Room entities, strict mapping, schema, and application-scoped repository construction.
+A separate `local-results.db` in `noBackupFilesDir` keeps configuration unchanged and
+allows independent origin snapshots and activity references to outlive their source
+records. Proposal and Activity relations share a singleton aggregate so Flow reads
+complete committed snapshots. Ordering is creation/event time followed by identifier.
+
+Create and lifecycle operations validate the current snapshot inside the same Room
+transaction as proposal and Activity writes. Activity identifier collisions roll back
+the proposal change. Updates require the expected revision and a monotonic clock;
+expiry no-ops create no revision or Activity. Strict hydration rejects unknown enums,
+partial date/time values, invalid state/fields, or invalid revision/timestamps without
+resetting records. Standalone Activity insertion excludes proposal lifecycle events.
+
+The approved interim policy retains records until explicit deletion. Nullable expiry
+is preserved and only changes lifecycle state when commanded; no raw queue, scheduler,
+automatic deletion, retention duration, or full reset is added. Clear Activity preserves
+Proposals and configuration. Proposal deletion preserves existing Activity metadata.
+No provider work happens in storage; handoff marking requires prior confirmation and
+successful Calendar UI opening. Production capture stays unavailable pending separate
+integration and model/device qualification.
+
+Shared tests cover restoration, revisions, clocks, expiry, and metadata boundaries.
+File-backed Android tests cover restart, concurrent updates, rollback, committed Flow
+snapshots, deletion independence, corrupt data failure, and no-backup location.
 
 ## Task 008 Shared Extraction Slice
 
@@ -172,7 +200,7 @@ Parsing/language and schema limits are defined in the specification's Task 008
 sections. Android time-zone/DST resolution stays with task 010. Download UI,
 privacy-safe scheduled retry, calibrated confidence/sensitivity detection, and
 production capture/storage integration remain later slices. WorkManager is absent
-because there is no approved durable retry payload or structured result repository.
+because there is no approved durable retry payload or scheduling policy.
 
 ## Task 008 Local Inference Extension
 
