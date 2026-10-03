@@ -53,7 +53,8 @@ The notification agent is a local policy engine. Its job is to decide, on device
 - `Draft`: useful notifications can become local structured proposals.
 - `Review`: sensitive, ambiguous, low-confidence, or schema-invalid results require user review.
 - `ConfirmAndWrite`: external writes require explicit user confirmation; the calendar MVP delegates final save to Android Calendar.
-- `Defer`: constrained device state moves local processing to WorkManager.
+- `Defer`: constrained work has an explicit outcome; WorkManager is conditional on
+  separately approved privacy-safe structured retry data.
 
 No MVP path should send raw notification text to a network service or allow model output to bypass schema and policy validation.
 
@@ -139,3 +140,72 @@ expiry, and clear-data scope need the next task `007` slice and approved policy.
 Requirement 7 and `AutomationProfile` require at least one Automation. This slice
 preserves the existing specification/domain invariant; empty Profile support
 requires a separate aligned product decision.
+
+## Task 008 Shared Extraction Slice
+
+`domain/extraction` in commonMain owns the asynchronous extractor contract,
+deterministic labeled-block adapter, strict streaming JSON decoder, resource-gate
+contracts, and policy-to-Proposal pipeline. Tests mirror these files in commonTest.
+The JSON library uses a custom decoder without adding a serialization compiler
+plugin. Duplicate keys are rejected during decoding; parser exceptions never leave
+the boundary, and debug input is disabled in decoder exceptions.
+
+The pipeline resolves one explicitly requested Automation in the selected Profile
+from a single configuration snapshot. It retains neither raw input nor a queue.
+It returns structured local results to its caller; future storage must commit them
+before production capture is enabled. Calendar origin labels are independent
+snapshots. No repository, UI state holder, notification alerts, or Calendar adapter
+is added; existing Room configuration/Flow and fail-closed capture wiring remain.
+
+Confidence, sensitivity, clock, expiry, and threshold are injected without runtime
+defaults. Complete candidates routed to review by policy produce a content-free
+review outcome; incomplete/ambiguous fields may produce NeedsReview proposals.
+Every Calendar candidate, including future adapter output, is schema-validated.
+
+Heavy adapters require Ready and all resource readings Available. Unknown readings
+deny heavy work. Deterministic fallback can still produce a Proposal, ignore, or
+review outcome; unsupported fallback becomes a typed unavailable/deferred/failure
+outcome. Cancellation propagates; ordinary adapter failure exposes no exception
+details and attempts deterministic fallback for heavy work.
+
+Parsing/language and schema limits are defined in the specification's Task 008
+sections. Android time-zone/DST resolution stays with task 010. Download UI,
+privacy-safe scheduled retry, calibrated confidence/sensitivity detection, and
+production capture/storage integration remain later slices. WorkManager is absent
+because there is no approved durable retry payload or structured result repository.
+
+## Task 008 Local Inference Extension
+
+`LocalTextInference` is a suspend shared boundary over transient instructions/input
+and a response schema. `LocalModelNotificationExtractor` encodes title/body as
+untrusted data with explicit posting context and decodes `notification.v1`.
+`NotificationAnalysis` separates classification and confidence/sensitivity signals
+from the sealed `SuggestedNotificationAction`. CalendarEvent is the first action;
+new types extend the payload decoder/schema, policy, and proposal outcome explicitly.
+The existing pipeline applies one configuration snapshot and the same policy to
+model and deterministic results. Native/vendor types never enter commonMain.
+
+The model's uncalibrated confidence is capped by the caller's assessment; caller
+sensitivity cannot be cleared. Matching promotion classification returns review until a
+separate filtering feature defines its behavior and permissions. Malformed/unsupported
+model output requests review; runtime unavailability may use deterministic fallback.
+
+Android's `inference/` owns LiteRT-LM 0.17.1, provisioned-model integrity/confinement,
+explicit resource probes, and native lifecycle. CPU-only execution avoids GPU/native
+manifest changes. All model/runtime budgets and resource thresholds are caller-owned.
+Models are not bundled/downloaded; no target phone or model is implicitly qualified.
+Fresh engines/conversations prevent cross-notification context. A tryLock rejects
+overlapping input without a raw queue. Timeout/cancellation waits for native terminal
+acknowledgement before close; blocking initialization has no hard interruption API.
+Unit fakes verify project-owned cancellation, limits, isolation, and error mapping;
+actual runtime memory/privacy/quality needs synthetic device qualification.
+
+Production capture remains unavailable. This extension introduces no persistence,
+UI, WorkManager, source-notification removal, or external action execution.
+
+LiteRT-LM is the primary runtime for background notification interpretation. Gemini
+Nano through ML Kit remains a possible foreground-only adapter: Google's current
+[GenAI restrictions](https://developers.google.com/ml-kit/genai#background_usage)
+block inference while the app is in the background, including foreground services.
+Both would use the same shared advisory contract and validation; new runtime
+availability never bypasses policy or enables a new action.
