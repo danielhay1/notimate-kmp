@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.hayduck.notemate.designsystem.NotiMateTheme
 import note_mate.shared.generated.resources.Res
 import note_mate.shared.generated.resources.notification_testing_back
 import note_mate.shared.generated.resources.notification_testing_blocked
@@ -47,7 +48,7 @@ fun NotificationTestScreen(
     onSettings: () -> Unit,
     onBack: () -> Unit,
 ) {
-    MaterialTheme {
+    NotiMateTheme {
         Surface(Modifier.fillMaxSize()) {
             Box(
                 Modifier.safeDrawingPadding().imePadding(),

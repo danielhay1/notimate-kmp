@@ -235,6 +235,15 @@ closing JNI resources. Native initialization and cancellation acknowledgement ca
 exceed the deadline. A stalled runtime remains busy rather than deleting active
 resources; this limitation requires target-device qualification before activation.
 
+## Initial Runtime Design System
+
+Task `004` supplies shared theme foundations, ProcessingStatusBanner, and
+ProposalCard from the approved design-system contract. Components render explicit
+immutable state with localized labels and caller-owned events. They do not enable
+processing, schedule retries, persist content, or perform external actions.
+Synthetic previews support English/Hebrew RTL, both themes, and large text.
+Permission/Today screens and production integration remain separate tasks.
+
 ## Developer Feature Keys
 
 Task `014` adds one shared bundled JSON of typed feature defaults and an injected
