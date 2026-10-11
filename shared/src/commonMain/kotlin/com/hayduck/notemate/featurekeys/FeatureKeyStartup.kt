@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.hayduck.notemate.designsystem.NotiMateTheme
 import note_mate.shared.generated.resources.Res
 import note_mate.shared.generated.resources.feature_keys_continue
 import note_mate.shared.generated.resources.feature_keys_default
@@ -59,7 +60,7 @@ fun FeatureKeyStartup(
         }
     }
     val state by model.state.collectAsStateWithLifecycle()
-    MaterialTheme {
+    NotiMateTheme {
         when (val current = state) {
             FeatureKeyStartupUiState.Ready -> readyContent()
             is FeatureKeyStartupUiState.Editing -> FeatureKeyEditor(

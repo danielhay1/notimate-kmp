@@ -238,6 +238,23 @@ block inference while the app is in the background, including foreground service
 Both would use the same shared advisory contract and validation; new runtime
 availability never bypasses policy or enables a new action.
 
+## Task 004 Initial Runtime UI
+
+`designsystem` in commonMain extends Material 3 with the approved stable light/dark
+palette, semantic container/content pairs, typography, spacing, and shapes.
+ProcessingStatusBanner and ProposalCard consume immutable display state and emit
+caller-owned actions. Proposal summaries accept localized, display-ready structured
+text; they do not format domain dates, read storage, change lifecycle state, or
+launch platform UI. Expired cards expose no lifecycle actions, and future callers
+must still enforce revision, expiry, and confirmation guards.
+
+Existing app and developer-tool UI adopt the theme without changing startup,
+feature-key gates, or notification posting. Synthetic previews cover both themes,
+English/Hebrew RTL, 200% text, and constrained/wider widths. Components adapt to
+their available width without window queries; shell size-class ownership remains
+deferred. No new state holder, navigation, permission flow, or production capture
+integration is introduced. Remaining inventory ships with its screen tasks.
+
 ## Task 014 Developer Tooling
 
 `featurekeys` in commonMain owns typed values, JSON validation, the app-owned

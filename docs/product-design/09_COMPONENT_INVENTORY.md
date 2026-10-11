@@ -1,7 +1,7 @@
 # NotiMate Component Inventory
 
-Status: Proposed runtime inventory; awaiting implementation approval
-Updated: 2026-08-21
+Status: Initial runtime slice implemented; remaining inventory follows screen tasks
+Updated: 2026-10-12
 
 ## Inventory Rules
 
@@ -145,7 +145,7 @@ user intent leading to those platform actions.
 
 ## Initial Runtime Slice
 
-Task 004 should begin with only:
+Task 004 implements only:
 
 1. `NotiMateTheme` and semantic colors;
 2. spacing and shape tokens;
@@ -154,3 +154,10 @@ Task 004 should begin with only:
 5. synthetic light/dark previews.
 
 Add other inventory items only when the corresponding screen task needs them.
+
+The initial components expose display-only state and explicit user-intent events.
+Proposal cards offer review/dismiss for needs-review, ready, and deferred states,
+retry/dismiss for failed state, and no lifecycle actions for expired state. Domain
+validation remains mandatory in future action handlers. Deferred content does not
+promise scheduled retries. Production integration and destination state mapping
+are not part of this slice.

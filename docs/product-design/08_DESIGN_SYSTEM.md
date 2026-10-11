@@ -1,7 +1,7 @@
 # NotiMate Design System
 
-Status: Proposed runtime contract; awaiting implementation approval
-Updated: 2026-08-21
+Status: Initial runtime slice implemented; remaining integration follows screen tasks
+Updated: 2026-10-12
 
 ## Purpose
 
@@ -221,3 +221,11 @@ The first implementation belongs under
 `shared/src/commonMain/kotlin/com/hayduck/notemate/designsystem/`. Android dynamic
 color, permission launchers, notification UI, and Calendar intents are not part of
 the shared design-system package.
+
+Task `004` implements the initial theme and two-component slice. New Material
+surface-container roles reuse the approved surface and surface-variant colors;
+they introduce no additional palette. Product components wrap content and actions
+at their allocated width. Window-size classes and navigation remain shell-owned
+work for later screen tasks. Material outline vectors include their Apache-2.0
+license and attribution in shared file resources. See packet `004` for observed
+validation and accessibility limits.
