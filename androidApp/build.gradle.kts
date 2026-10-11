@@ -21,6 +21,8 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.runtimeCompose)
+    implementation(libs.androidx.lifecycle.viewmodelCompose)
 
     implementation(libs.compose.uiToolingPreview)
     testImplementation(libs.kotlin.testJunit)

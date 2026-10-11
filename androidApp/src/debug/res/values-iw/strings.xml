@@ -1,0 +1,4 @@
+<resources>
+    <string name="notification_test_channel">בדיקות התראה ידניות</string>
+    <string name="notification_test_hidden">התראת בדיקה</string>
+</resources>

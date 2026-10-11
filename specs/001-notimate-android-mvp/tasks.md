@@ -102,3 +102,15 @@ and model/device qualification are separate dependencies for activation.
 - [ ] Build local data, retention, and clear-activity controls.
 - [ ] Keep sign-in optional and contextual to backup and sync.
 - [ ] Document and enforce the local-only versus syncable data boundary before enabling sync.
+
+## Developer Tooling — Task 014
+
+- [x] Add shared typed JSON defaults and an injected feature-key manager.
+- [x] Add persistent debug overrides with validation and release isolation.
+- [x] Add shared startup editor and Android/iOS build-configuration wiring.
+- [x] Gate an Android debug-only manual notification form and native sender.
+- [x] Add focused shared/state/persistence/notification tests without UI tests.
+
+Delivery and observed validation belong in packet `014` and its pull request.
+This tooling does not complete permission onboarding, production alerts, or
+notification extraction activation.
