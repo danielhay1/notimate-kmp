@@ -71,6 +71,16 @@ conditional: no raw content is retained and no retry is scheduled. Delivery and
 validation evidence belongs in packet `008`. Results storage, production integration,
 and model/device qualification are separate dependencies for activation.
 
+## Shared UI Foundations — Task 004
+
+- [x] Implement the approved shared theme, semantic colors, spacing, and shapes.
+- [x] Add stateless ProcessingStatusBanner and ProposalCard with explicit events.
+- [x] Add synthetic light/dark, English/Hebrew RTL, large-text, and width previews.
+
+This initial slice supplies reusable UI only. Screen integration, permission
+handling, navigation, and the remaining component inventory stay with later tasks.
+Observed validation and accessibility limits belong in packet `004`.
+
 ## Phase 5: Permission And Proposal UI
 
 - [ ] Build Notification Access education, system-settings handoff, and verification.

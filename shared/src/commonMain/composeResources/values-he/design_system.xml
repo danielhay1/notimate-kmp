@@ -1,0 +1,37 @@
+<resources>
+    <string name="processing_active">NotiMate פעיל</string>
+    <string name="processing_profile">פועל עם פרופיל %1$s</string>
+    <string name="processing_paused">העיבוד מושהה</string>
+    <string name="processing_permission_required">נדרשת גישה להתראות</string>
+    <string name="processing_permission_body">NotiMate אינו יכול לנתח התראות חדשות עד להפעלת הגישה.</string>
+    <string name="processing_settings">פתיחת הגדרות Android</string>
+    <string name="processing_degraded">חלק מהתכונות החכמות אינן זמינות</string>
+    <string name="processing_unavailable">העיבוד אינו זמין כרגע</string>
+    <string name="resume">המשך עיבוד</string>
+    <string name="use_basic_processing">שימוש בעיבוד בסיסי</string>
+    <string name="try_again">ניסיון חוזר</string>
+    <string name="review_later">בדיקה מאוחר יותר</string>
+    <string name="proposal_type_calendar">אירוע אפשרי ביומן</string>
+    <string name="proposal_needs_review">נדרשת בדיקה</string>
+    <string name="proposal_ready">מוכן לבדיקה שלך</string>
+    <string name="proposal_deferred">נדחה לעת עתה</string>
+    <string name="proposal_failed">לא ניתן להשלים את ההצעה</string>
+    <string name="proposal_expired">פג התוקף</string>
+    <string name="proposal_source">מקור: %1$s</string>
+    <string name="proposal_profile">פרופיל: %1$s</string>
+    <string name="proposal_automation">אוטומציה: %1$s</string>
+    <string name="proposal_review">בדיקת ההצעה</string>
+    <string name="proposal_dismiss">דחיית ההצעה</string>
+    <string name="preview_profile">דוגמה</string>
+    <string name="preview_source">יישום לדוגמה</string>
+    <string name="preview_automation">הצעות ליומן</string>
+    <string name="preview_title">פגישת תכנון לדוגמה עם כותרת ארוכה שיכולה לגלוש לשורה נוספת</string>
+    <string name="preview_summary">20 באוקטובר 2026 · 18:00 · חדר לדוגמה</string>
+    <string name="preview_needs_review">יש לאשר את השעה. יש לבדוק את השדות המובנים לפני המשך הפעולה.</string>
+    <string name="preview_ready">יש לבדוק את הפרטים לפני פתיחת היומן. עדיין לא נוסף אירוע.</string>
+    <string name="preview_deferred">ההצעה ממתינה. ניתן לבדוק את הפרטים המובנים השמורים שלה.</string>
+    <string name="preview_failed">לא ניתן לפתוח את היומן. ההצעה נשארה במכשיר זה. ניתן לנסות שוב.</string>
+    <string name="preview_expired">לא ניתן לבצע פעולה בהצעה כי המועד שהוגדר לתוקפה כבר עבר.</string>
+    <string name="preview_degraded">הבינה המלאכותית במכשיר אינה זמינה. כללים נתמכים עדיין זמינים בעיבוד בסיסי.</string>
+    <string name="preview_unavailable">לא ניתן להשלים עיבוד כאשר המכשיר תחת עומס. ניתן לנסות שוב מאוחר יותר.</string>
+</resources>

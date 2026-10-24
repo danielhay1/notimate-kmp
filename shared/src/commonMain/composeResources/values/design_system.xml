@@ -1,0 +1,37 @@
+<resources>
+    <string name="processing_active">NotiMate is active</string>
+    <string name="processing_profile">Using %1$s Profile</string>
+    <string name="processing_paused">Processing is paused</string>
+    <string name="processing_permission_required">Notification Access is required</string>
+    <string name="processing_permission_body">NotiMate cannot analyze new notifications until access is enabled.</string>
+    <string name="processing_settings">Open Android settings</string>
+    <string name="processing_degraded">Some smart features are unavailable</string>
+    <string name="processing_unavailable">Processing is temporarily unavailable</string>
+    <string name="resume">Resume</string>
+    <string name="use_basic_processing">Use basic processing</string>
+    <string name="try_again">Try again</string>
+    <string name="review_later">Review later</string>
+    <string name="proposal_type_calendar">Possible calendar event</string>
+    <string name="proposal_needs_review">Needs review</string>
+    <string name="proposal_ready">Ready for your review</string>
+    <string name="proposal_deferred">Deferred</string>
+    <string name="proposal_failed">Could not complete proposal</string>
+    <string name="proposal_expired">Expired</string>
+    <string name="proposal_source">Source: %1$s</string>
+    <string name="proposal_profile">Profile: %1$s</string>
+    <string name="proposal_automation">Automation: %1$s</string>
+    <string name="proposal_review">Review proposal</string>
+    <string name="proposal_dismiss">Dismiss proposal</string>
+    <string name="preview_profile">Sample</string>
+    <string name="preview_source">Sample app</string>
+    <string name="preview_automation">Calendar suggestions</string>
+    <string name="preview_title">Sample planning session with a longer title that can wrap</string>
+    <string name="preview_summary">October 20, 2026 · 18:00 · Sample room</string>
+    <string name="preview_needs_review">The time needs confirmation. Review the structured fields before continuing.</string>
+    <string name="preview_ready">Review these details before opening Calendar. Nothing has been added yet.</string>
+    <string name="preview_deferred">This proposal is waiting. You can review its saved structured details.</string>
+    <string name="preview_failed">Calendar could not be opened. Your proposal remains on this device. Try again.</string>
+    <string name="preview_expired">This proposal is no longer actionable because its explicit deadline has passed.</string>
+    <string name="preview_degraded">On-device AI is unavailable. Supported rules remain available through basic processing.</string>
+    <string name="preview_unavailable">Processing cannot complete while the device is under pressure. Try again later.</string>
+</resources>
