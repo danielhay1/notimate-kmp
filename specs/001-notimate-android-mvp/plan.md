@@ -272,3 +272,32 @@ transient in the form and is passed only to the OS. Existing own-package filteri
 and production capture remain unchanged. Pure shared and Android host tests cover
 configuration/state/persistence/platform decisions; manual simulator validation
 checks startup and delivery without adding UI tests.
+
+## Task 009 Permission And Today Core
+
+`today` in commonMain owns immutable presentation contracts, onboarding progress
+contracts, pure result/status mapping, and a scope-injected state holder. An Android
+ViewModel retains that holder across configuration changes. Configuration/results
+Flows load and retry independently. Structured proposals are projected without
+lifecycle writes; a cancellable deadline timer updates expiry presentation. Recent
+Activity is limited to five typed outcomes for display without changing retention.
+
+Android owns an atomic versioned progress file in `noBackupFilesDir`, current
+Notification Access and alert-permission reads, contextual runtime requests, settings
+launchers, and locale-aware date/time formatting. Foreground/settings return reads OS
+truth; request/access history only informs education and revocation labels. Separate
+one-time effects launch platform UI. Shared renderers neither launch permissions nor
+call repositories. Shared navigation covers only onboarding, Today, and Permissions;
+Back/forward transitions preserve local progress and Today scroll position.
+
+The shared shell reads one Material adaptive window class and constrains the feed
+and education to readable widths. Existing theme/banner/cards are reused; cards have
+a display-only mode and Draft label, and unavailable banners can omit a nonexistent
+recovery. English/Hebrew resources and synthetic previews cover important states.
+`POST_NOTIFICATIONS` moves to the main manifest; debug sender code stays isolated.
+
+Production capture remains unavailable, with no model provisioning, inference,
+proposal alert delivery, source-selection UI, Profile switching, lifecycle actions,
+or Calendar integration. Task `009` documents the remaining onboarding slices;
+tasks `010`–`013` retain their existing feature ownership. Business/state/permission
+mapping tests and manual emulator checks supply evidence; no UI tests are introduced.

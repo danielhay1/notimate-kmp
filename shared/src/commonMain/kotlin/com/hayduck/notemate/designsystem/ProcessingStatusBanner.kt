@@ -77,6 +77,7 @@ fun ProcessingStatusBanner(
         is ProcessingStatusUiState.Unavailable -> when (state.recovery) {
             ProcessingRecovery.TRY_AGAIN -> ProcessingStatusAction.TRY_AGAIN
             ProcessingRecovery.REVIEW_LATER -> ProcessingStatusAction.REVIEW_LATER
+            null -> null
         }
     }
     Surface(
