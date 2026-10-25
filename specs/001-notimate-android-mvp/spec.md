@@ -200,17 +200,33 @@ raw storage, or automatic model download is part of inference.
 
 `notification.v1` requires exactly `schema`, `classification`, `confidence`,
 `isSensitive`, and `suggestedAction`. Classification is independent of action:
-`POSSIBLE_CALENDAR_EVENT`, `PROMOTIONAL`, `IGNORED`, `UNKNOWN`, or `REVIEW_NEEDED`.
-Confidence must be a JSON number in 0..1; sensitivity must be a JSON boolean.
-The tentative model score can only lower the caller's confidence assessment, and
-model sensitivity can only add review requirements. Calibration remains unqualified.
+`POSSIBLE_CALENDAR_EVENT`, `OTP_CODE`, `PROMOTIONAL`, `IGNORED`, `UNKNOWN`, or
+`REVIEW_NEEDED`. Confidence must be a JSON number in 0..1; sensitivity must be a
+JSON boolean. The tentative model score can only lower the caller's confidence
+assessment, and model sensitivity can only add review requirements. Calibration
+remains unqualified.
 
-The only supported suggestion is `{type: calendar_event, calendar: <calendar.v1>}`.
-A calendar classification requires this payload; other classifications require
+The supported suggestions are `{type: calendar_event, calendar: <calendar.v1>}` and
+`{type: otp_code, otp: <otp.v1>}`. A calendar classification requires `calendar.v1`;
+an `OTP_CODE` classification requires `otp.v1` (`schema: "otp.v1"` and a 4–8 character
+ASCII alphanumeric `code` containing at least one digit); other classifications require
 null. Unknown action types, duplicate keys at every level, mismatched classifications,
-invalid nested schemas, or malformed output cannot create proposals. Matching promotion
-classification currently yields review, including for an Ignore Automation; no
-promotion filtering, source notification cancellation, or new external action ships.
+invalid nested schemas, or malformed output cannot create proposals or clipboard copies.
+Matching promotion classification currently yields review, including for an Ignore
+Automation; no promotion filtering or source notification cancellation ships.
+
+`COPY_OTP_TO_CLIPBOARD` is local-LLM-only (requiring `LocalAiState.READY` and available
+memory, battery, and thermal resources; unavailable or constrained states do not fall
+back to deterministic rules) and executes only when the selected enabled Automation is
+configured with `ConfirmationPolicy.AUTOMATICALLY_PERFORM`, schema validation succeeds,
+confidence meets the caller threshold, and `isSensitive` is false. The validated OTP
+remains transient in memory: `AndroidOtpClipboardWriter` writes it to `ClipboardManager`
+with `ClipDescription.EXTRA_IS_SENSITIVE = true` (`"android.content.extra.IS_SENSITIVE"`)
+so Android 13+ masks the preview overlay, and appends a content-free
+`OTP_COPIED_TO_CLIPBOARD` Activity record only after the platform write succeeds. On
+Android 15+, standard third-party `NotificationListenerService` listeners are subject to
+OS-level sensitive-notification redaction unless `RECEIVE_SENSITIVE_NOTIFICATIONS` is
+granted via developer `appops` or system Enhanced Notifications are disabled.
 
 Future actions add a typed suggestion, strict payload decoder and response-schema
 branch, policy mapping, and proposal outcome. They retain source/Automation admission,

@@ -1,8 +1,12 @@
 package com.hayduck.notemate.domain.extraction
 
+import com.hayduck.notemate.domain.activity.ActivityEvent
+import com.hayduck.notemate.domain.activity.ActivityRecord
 import com.hayduck.notemate.domain.agent.AgentOutcome
 import com.hayduck.notemate.domain.agent.AgentPolicy
 import com.hayduck.notemate.domain.agent.AgentPolicyInput
+import com.hayduck.notemate.domain.automation.AutomationAction
+import com.hayduck.notemate.domain.automation.ConfirmationPolicy
 import com.hayduck.notemate.domain.configuration.LocalConfiguration
 import com.hayduck.notemate.domain.notification.NotificationClassification
 import com.hayduck.notemate.domain.notification.ObservedNotification
@@ -37,8 +41,48 @@ class ExtractionProposalRequest(
     override fun toString(): String = "ExtractionProposalRequest([REDACTED])"
 }
 
+/** Validated transient OTP ready for immediate clipboard copy; callers must never persist [code]. */
+class OtpClipboardCopy(
+    val code: String,
+    val origin: ProposalOrigin,
+    val createdAtEpochMilliseconds: Long,
+) {
+    init {
+        require(OtpExtraction(code).isSchemaValid()) { "Invalid OTP code." }
+    }
+
+    /** Produces content-free audit metadata for a completed clipboard copy; [code] is excluded. */
+    fun activityRecord(activityId: String): ActivityRecord = ActivityRecord(
+        id = activityId,
+        event = ActivityEvent.OTP_COPIED_TO_CLIPBOARD,
+        occurredAtEpochMilliseconds = createdAtEpochMilliseconds,
+        proposalId = null,
+        profileId = origin.profileId,
+        automationId = origin.automationId,
+        applicationId = origin.applicationId,
+    )
+
+    override fun equals(other: Any?): Boolean =
+        other is OtpClipboardCopy &&
+            code == other.code &&
+            origin == other.origin &&
+            createdAtEpochMilliseconds == other.createdAtEpochMilliseconds
+
+    override fun hashCode(): Int {
+        var result = code.hashCode()
+        result = 31 * result + origin.hashCode()
+        result = 31 * result + createdAtEpochMilliseconds.hashCode()
+        return result
+    }
+
+    override fun toString(): String = "OtpClipboardCopy([REDACTED])"
+}
+
 sealed interface NotificationExtractionOutcome {
     data class Proposal(val proposal: CalendarProposal) : NotificationExtractionOutcome
+    data class OtpClipboard(val copy: OtpClipboardCopy) : NotificationExtractionOutcome {
+        override fun toString(): String = "OtpClipboard([REDACTED])"
+    }
     data object Ignored : NotificationExtractionOutcome
     data class ReviewNeeded(val reason: ExtractionReviewReason) : NotificationExtractionOutcome
     /** No input is retained or retry scheduled; callers need approved structured work. */
@@ -85,10 +129,15 @@ class NotificationExtractionPipeline(
         if (!notification.isWithinExtractionLimits()) {
             return review(ExtractionReviewReason.INPUT_LIMIT)
         }
+        val requiresLocalModelOnly = automation.action == AutomationAction.COPY_OTP_TO_CLIPBOARD
+        if (requiresLocalModelOnly && !extractor.requiresHeavyWork) {
+            return review(ExtractionReviewReason.LOCAL_AI_UNAVAILABLE)
+        }
         val blocked = heavyWorkFallback(device, localAiState)
+        if (requiresLocalModelOnly && blocked != null) return blocked
         val result = if (blocked == null) runExtractor(extractor, notification, context)
             else runExtractor(fallback, notification, context)
-        val canFallback = extractor.requiresHeavyWork && blocked == null
+        val canFallback = extractor.requiresHeavyWork && blocked == null && !requiresLocalModelOnly
         val recovered = if (canFallback && (result == ExtractionResult.Failed ||
             result is ExtractionResult.Unavailable)
         ) runExtractor(fallback, notification, context) else result
@@ -97,12 +146,20 @@ class NotificationExtractionPipeline(
             is ExtractionResult.Calendar -> recovered.extraction
             is ExtractionResult.Analysis -> when (val action = recovered.analysis.suggestedAction) {
                 is SuggestedNotificationAction.CalendarEvent -> action.calendar
-                null -> null
+                else -> null
+            }
+            else -> null
+        }
+        val otp = when (recovered) {
+            is ExtractionResult.Analysis -> when (val action = recovered.analysis.suggestedAction) {
+                is SuggestedNotificationAction.OtpCode -> action.otp
+                else -> null
             }
             else -> null
         }
         val schemaValid = (analysis?.isSchemaValid() ?: true) &&
-            (calendar?.isSchemaValid() ?: true)
+            (calendar?.isSchemaValid() ?: true) &&
+            (otp?.isSchemaValid() ?: true)
         val confidence = minOf(
             assessment.confidence, analysis?.confidence ?: assessment.confidence,
         )
@@ -130,15 +187,26 @@ class NotificationExtractionPipeline(
         if (decision == AgentOutcome.IGNORE) return NotificationExtractionOutcome.Ignored
         if (isSensitive) return review(ExtractionReviewReason.POLICY_REVIEW)
         if (!schemaValid) return review(ExtractionReviewReason.INVALID_OUTPUT)
+        val origin = ProposalOrigin(
+            profile.id, profile.name, automation.id, automation.name,
+            notification.source.applicationId, request.applicationName,
+        )
+        if (otp != null) {
+            if (decision != AgentOutcome.AUTOMATIC_ACTION) {
+                return review(ExtractionReviewReason.POLICY_REVIEW)
+            }
+            return NotificationExtractionOutcome.OtpClipboard(
+                OtpClipboardCopy(otp.code, origin, request.createdAtEpochMilliseconds),
+            )
+        }
         if (calendar != null) {
-            if (decision == AgentOutcome.REVIEW &&
-                calendar.fields.validationIssues(calendar.ambiguousFields).isEmpty()
+            if (automation.action != AutomationAction.PROPOSE_CALENDAR_EVENT ||
+                automation.confirmationPolicy != ConfirmationPolicy.ALWAYS_REVIEW ||
+                (decision == AgentOutcome.REVIEW &&
+                    calendar.fields.validationIssues(calendar.ambiguousFields).isEmpty())
             ) return review(ExtractionReviewReason.POLICY_REVIEW)
             return NotificationExtractionOutcome.Proposal(CalendarProposal.draft(
-                request.proposalId,
-                ProposalOrigin(profile.id, profile.name, automation.id, automation.name,
-                    notification.source.applicationId, request.applicationName),
-                calendar.fields, request.createdAtEpochMilliseconds,
+                request.proposalId, origin, calendar.fields, request.createdAtEpochMilliseconds,
                 request.expiresAtEpochMilliseconds, calendar.ambiguousFields,
             ).validate(request.createdAtEpochMilliseconds))
         }

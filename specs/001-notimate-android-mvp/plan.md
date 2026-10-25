@@ -51,6 +51,7 @@ The notification agent is a local policy engine. Its job is to decide, on device
 
 - `Ignore`: deterministic local rules can suppress or ignore low-value notifications.
 - `Draft`: useful notifications can become local structured proposals.
+- `AutomaticAction`: validated local-LLM `OTP_CODE` extractions can be copied to the device clipboard with `EXTRA_IS_SENSITIVE` when an enabled `COPY_OTP_TO_CLIPBOARD` Automation uses `AUTOMATICALLY_PERFORM`, recording only a content-free `OTP_COPIED_TO_CLIPBOARD` Activity event.
 - `Review`: sensitive, ambiguous, low-confidence, or schema-invalid results require user review.
 - `ConfirmAndWrite`: external writes require explicit user confirmation; the calendar MVP delegates final save to Android Calendar.
 - `Defer`: constrained work has an explicit outcome; WorkManager is conditional on
@@ -208,10 +209,15 @@ because there is no approved durable retry payload or scheduling policy.
 and a response schema. `LocalModelNotificationExtractor` encodes title/body as
 untrusted data with explicit posting context and decodes `notification.v1`.
 `NotificationAnalysis` separates classification and confidence/sensitivity signals
-from the sealed `SuggestedNotificationAction`. CalendarEvent is the first action;
-new types extend the payload decoder/schema, policy, and proposal outcome explicitly.
-The existing pipeline applies one configuration snapshot and the same policy to
-model and deterministic results. Native/vendor types never enter commonMain.
+from the sealed `SuggestedNotificationAction`. `CalendarEvent` and `OtpCode` (`otp.v1`)
+are the supported typed actions; new types extend the payload decoder/schema, policy,
+and outcome explicitly. `COPY_OTP_TO_CLIPBOARD` is local-LLM-only (no deterministic
+fallback) and requires `ConfirmationPolicy.AUTOMATICALLY_PERFORM` to emit a transient
+`OtpClipboardCopy`. `AndroidOtpClipboardWriter` writes the code to `ClipboardManager`
+with `EXTRA_IS_SENSITIVE = true` and appends a content-free `OTP_COPIED_TO_CLIPBOARD`
+Activity record without persisting the OTP value. The existing pipeline applies one
+configuration snapshot and the same policy to model and deterministic results.
+Native/vendor types never enter commonMain.
 
 The model's uncalibrated confidence is capped by the caller's assessment; caller
 sensitivity cannot be cleared. Matching promotion classification returns review until a

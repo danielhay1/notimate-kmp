@@ -234,7 +234,8 @@ class RoomLocalResultsRepositoryTest {
     @Test
     fun standaloneAppendCannotForgeLifecycleEventsOrProposalReferences(): Unit = runBlocking {
         for (event in ActivityEvent.entries.filter {
-            it !in setOf(ActivityEvent.NOTIFICATION_IGNORED, ActivityEvent.PROFILE_ACTIVATED,
+            it !in setOf(ActivityEvent.OTP_COPIED_TO_CLIPBOARD,
+                ActivityEvent.NOTIFICATION_IGNORED, ActivityEvent.PROFILE_ACTIVATED,
                 ActivityEvent.NOTIFICATION_ACCESS_LOST)
         }) {
             assertFailsWith<IllegalArgumentException> {

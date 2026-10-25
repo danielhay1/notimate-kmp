@@ -66,11 +66,15 @@ structured storage, integration, and model/device qualification.
 ## Approved Local Model Extension — 2026-10-03
 
 The user approved a real local model adapter and an architecture that can grow to
-promotion classification/filtering and additional suggested actions. In this slice,
-classification and typed suggested actions are separate; calendar is the only
-supported proposal payload. Matching promotion classification returns review and filtering
-remains future work. New action payloads must have explicit schema, policy, and
-proposal handling; unknown actions never execute.
+promotion classification/filtering and additional suggested actions. Classification
+and typed suggested actions are separate: `calendar.v1` (`POSSIBLE_CALENDAR_EVENT`)
+produces calendar proposals, and `otp.v1` (`OTP_CODE`) produces transient
+`OtpClipboardCopy` outcomes for `COPY_OTP_TO_CLIPBOARD` Automations configured with
+`AUTOMATICALLY_PERFORM` (local-LLM only, with no deterministic rule fallback, written
+to Android `ClipboardManager` with `EXTRA_IS_SENSITIVE = true` and recorded via a
+content-free `OTP_COPIED_TO_CLIPBOARD` Activity event). Matching promotion classification
+returns review and filtering remains future work. New action payloads must have explicit
+schema, policy, and outcome handling; unknown actions never execute.
 
 Shared extraction is asynchronous. The local model receives the bounded title/body
 as untrusted JSON data with explicit caller-resolved posting date/time, time zone,
