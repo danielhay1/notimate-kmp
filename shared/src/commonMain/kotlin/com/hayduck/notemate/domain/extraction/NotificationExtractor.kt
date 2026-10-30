@@ -72,6 +72,18 @@ internal fun CalendarExtraction.isSchemaValid(): Boolean =
             text.none { it.isISOControl() })
     }
 
+/** Rejects invented, partial-token, and multiple distinct code candidates in received content. */
+internal fun OtpExtraction.matchesSource(notification: ObservedNotification): Boolean {
+    val candidates = listOfNotNull(notification.content.title, notification.content.body)
+        .flatMap { text ->
+            text.map { if (it.isLetterOrDigit() || it == '_') it else ' ' }
+                .joinToString("").split(' ')
+        }
+        .filter { OtpExtraction(it).isSchemaValid() }
+        .toSet()
+    return candidates == setOf(code)
+}
+
 internal fun OtpExtraction.isSchemaValid(): Boolean =
     code.length in MINIMUM_OTP_CODE_LENGTH..MAXIMUM_OTP_CODE_LENGTH &&
         code.all { it in '0'..'9' || it in 'A'..'Z' || it in 'a'..'z' } &&

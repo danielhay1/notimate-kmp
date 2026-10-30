@@ -284,10 +284,16 @@ class NotificationExtractionPipelineTest {
                 false,
             ))
         }
+        val otpInput = notification.copy(content = NotificationContent("Verification", "482910"))
         val outcome = assertIs<NotificationExtractionOutcome.OtpClipboard>(
-            process(otpModel, config = otpConfig),
+            process(otpModel, config = otpConfig, input = otpInput),
         )
         assertEquals("482910", outcome.copy.code)
+        listOf("No code here", "14829100", "482910 and 773216", "prefix482910").forEach { body ->
+            assertEquals(review(ExtractionReviewReason.INVALID_OUTPUT),
+                process(otpModel, config = otpConfig,
+                    input = notification.copy(content = NotificationContent(null, body))))
+        }
         assertEquals("personal", outcome.copy.origin.profileId)
         assertEquals("calendar", outcome.copy.origin.automationId)
         assertFalse(outcome.toString().contains("482910"))

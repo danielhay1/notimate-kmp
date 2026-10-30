@@ -16,7 +16,10 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -59,7 +62,8 @@ class AndroidOtpClipboardWriterTest {
 
     @Test
     fun copyWritesSensitivePrimaryClipAndRecordsContentFreeActivityOnly(): Unit = runBlocking {
-        val writer = AndroidOtpClipboardWriter(context, repository, Dispatchers.Unconfined)
+        val writer = AndroidOtpClipboardWriter(context, repository, Dispatchers.Unconfined,
+            nowEpochMilliseconds = { 500L }, isDeviceUnlocked = { true })
         assertTrue(writer.copyAndRecord(copy, "otp-copied-1"))
 
         val clipboard = checkNotNull(context.getSystemService(ClipboardManager::class.java))
@@ -94,6 +98,7 @@ class AndroidOtpClipboardWriterTest {
         }
         val missingWriter = AndroidOtpClipboardWriter(
             noClipboardContext, repository, Dispatchers.Unconfined,
+            nowEpochMilliseconds = { 500L }, isDeviceUnlocked = { true },
         )
         assertFalse(missingWriter.copyAndRecord(copy, "missing-clipboard"))
         assertTrue(repository.get().activity.isEmpty())
@@ -102,8 +107,53 @@ class AndroidOtpClipboardWriterTest {
             context,
             repository,
             Dispatchers.Unconfined,
+            nowEpochMilliseconds = { 500L }, isDeviceUnlocked = { true },
         ) { _, _ -> throw SecurityException("Clipboard write denied") }
         assertFalse(failingWriter.copyAndRecord(copy, "denied-clipboard"))
+        assertTrue(repository.get().activity.isEmpty())
+    }
+
+    @Test
+    fun cancellationAfterWriteStillRecordsExactlyOneAuditEvent(): Unit = runBlocking {
+        val caller = Job()
+        val writer = AndroidOtpClipboardWriter(
+            context, repository, Dispatchers.Unconfined,
+            nowEpochMilliseconds = { 500L }, isDeviceUnlocked = { true },
+        ) { clipboard, clip ->
+            clipboard.setPrimaryClip(clip)
+            caller.cancel()
+        }
+        val operation = CoroutineScope(caller + Dispatchers.Unconfined).launch {
+            writer.copyAndRecord(copy, "cancel-after-write")
+        }
+        operation.join()
+        val clipboard = checkNotNull(context.getSystemService(ClipboardManager::class.java))
+        assertEquals(copy.code, clipboard.primaryClip?.getItemAt(0)?.text.toString())
+        assertEquals(listOf("cancel-after-write"), repository.get().activity.map { it.id })
+    }
+
+    @Test
+    fun staleFutureAndLockedNotificationsNeverWriteOrAudit(): Unit = runBlocking {
+        for ((now, unlocked) in listOf(60_501L to true, 499L to true, 500L to false)) {
+            val writer = AndroidOtpClipboardWriter(
+                context, repository, Dispatchers.Unconfined,
+                nowEpochMilliseconds = { now }, isDeviceUnlocked = { unlocked },
+            ) { _, _ -> error("Must not copy") }
+            assertFalse(writer.copyAndRecord(copy, "rejected"))
+        }
+        assertTrue(repository.get().activity.isEmpty())
+    }
+
+    @Test
+    fun alreadyCancelledCallerNeverWrites(): Unit = runBlocking {
+        val caller = Job().apply { cancel() }
+        val writer = AndroidOtpClipboardWriter(
+            context, repository, Dispatchers.Unconfined,
+            nowEpochMilliseconds = { 500L }, isDeviceUnlocked = { true },
+        ) { _, _ -> error("Must not copy") }
+        CoroutineScope(caller + Dispatchers.Unconfined).launch {
+            writer.copyAndRecord(copy, "already-cancelled")
+        }.join()
         assertTrue(repository.get().activity.isEmpty())
     }
 
@@ -113,6 +163,7 @@ class AndroidOtpClipboardWriterTest {
             context,
             repository,
             Dispatchers.Unconfined,
+            nowEpochMilliseconds = { 500L }, isDeviceUnlocked = { true },
         ) { _, _ -> throw CancellationException() }
         assertFailsWith<IllegalArgumentException> { writer.copyAndRecord(copy, " ") }
         assertFailsWith<CancellationException> { writer.copyAndRecord(copy, "cancelled") }

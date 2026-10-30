@@ -278,3 +278,14 @@ transient in the form and is passed only to the OS. Existing own-package filteri
 and production capture remain unchanged. Pure shared and Android host tests cover
 configuration/state/persistence/platform decisions; manual simulator validation
 checks startup and delivery without adding UI tests.
+
+## OTP foundation integration boundary
+
+OTP extraction validates exact, unique source membership before returning a transient outcome.
+The Android adapter rejects stale/future input and locked/non-interactive devices, masks previews,
+and completes a bounded audit attempt despite caller cancellation after starting a write.
+Clipboard and audit are not atomic; storage failures must not trigger a clipboard retry.
+Production capture remains disabled. Before activation, implement explicit opt-in and source controls,
+revalidate current access/settings/Profile at the write boundary, cancel removed/updated notifications,
+prevent duplicates, and qualify a provisioned local model on target devices. Android 15+ OTP redaction
+cannot be bypassed by ordinary notification access. See `docs/android-otp-support.md`.

@@ -147,3 +147,14 @@ Models and the temporary experiment remained outside the repository. No real
 notification input or generated payload was saved or logged. Production activation,
 model/device qualification remain separate gates. PR #9 passed independent review and
 exact-head hosted checks before the user merged it into `dev` at `338d693`.
+
+## OTP foundation integration boundary
+
+OTP extraction validates exact, unique source membership before returning a transient outcome.
+The Android adapter rejects stale/future input and locked/non-interactive devices, masks previews,
+and completes a bounded audit attempt despite caller cancellation after starting a write.
+Clipboard and audit are not atomic; storage failures must not trigger a clipboard retry.
+Production capture remains disabled. Before activation, implement explicit opt-in and source controls,
+revalidate current access/settings/Profile at the write boundary, cancel removed/updated notifications,
+prevent duplicates, and qualify a provisioned local model on target devices. Android 15+ OTP redaction
+cannot be bypassed by ordinary notification access. See `docs/android-otp-support.md`.

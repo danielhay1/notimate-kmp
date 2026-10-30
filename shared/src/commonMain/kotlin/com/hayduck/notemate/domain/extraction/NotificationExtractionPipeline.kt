@@ -46,6 +46,7 @@ class OtpClipboardCopy(
     val code: String,
     val origin: ProposalOrigin,
     val createdAtEpochMilliseconds: Long,
+    val postedAtEpochMilliseconds: Long = createdAtEpochMilliseconds,
 ) {
     init {
         require(OtpExtraction(code).isSchemaValid()) { "Invalid OTP code." }
@@ -66,12 +67,14 @@ class OtpClipboardCopy(
         other is OtpClipboardCopy &&
             code == other.code &&
             origin == other.origin &&
-            createdAtEpochMilliseconds == other.createdAtEpochMilliseconds
+            createdAtEpochMilliseconds == other.createdAtEpochMilliseconds &&
+            postedAtEpochMilliseconds == other.postedAtEpochMilliseconds
 
     override fun hashCode(): Int {
         var result = code.hashCode()
         result = 31 * result + origin.hashCode()
         result = 31 * result + createdAtEpochMilliseconds.hashCode()
+        result = 31 * result + postedAtEpochMilliseconds.hashCode()
         return result
     }
 
@@ -195,8 +198,10 @@ class NotificationExtractionPipeline(
             if (decision != AgentOutcome.AUTOMATIC_ACTION) {
                 return review(ExtractionReviewReason.POLICY_REVIEW)
             }
+            if (!otp.matchesSource(notification)) return review(ExtractionReviewReason.INVALID_OUTPUT)
             return NotificationExtractionOutcome.OtpClipboard(
-                OtpClipboardCopy(otp.code, origin, request.createdAtEpochMilliseconds),
+                OtpClipboardCopy(otp.code, origin, request.createdAtEpochMilliseconds,
+                    notification.postedAtEpochMilliseconds),
             )
         }
         if (calendar != null) {

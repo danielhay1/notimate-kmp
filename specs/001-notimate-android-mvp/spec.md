@@ -6,7 +6,9 @@ Build the Android-first MVP of NotiMate: an on-device smart notification manager
 
 The preferred agent behavior is local-first: every received notification is minimized, classified, and handled on device whenever possible. The agent should produce validated structured proposals and policy decisions, not free-form autonomous side effects.
 
-The first complete action journey is a calendar-event proposal. Reminders, financial records, additional actions, automatic profile switching, and direct provider writes remain post-MVP candidates.
+The first complete action journey is a calendar-event proposal. Reminders, financial records, other actions, automatic profile switching, and direct provider writes remain post-MVP candidates.
+The OTP extraction and Android clipboard foundation is implemented separately; its production
+activation and user opt-in controls remain pending integration and model/device qualification.
 
 ## Requirement 1: Permission Onboarding
 
@@ -58,7 +60,8 @@ The first complete action journey is a calendar-event proposal. Reminders, finan
 2. The agent can automatically ignore deterministic low-value notifications.
 3. The agent can create structured action drafts for useful notifications.
 4. The agent cannot write to external providers without user confirmation in the MVP.
-5. The agent routes sensitive or ambiguous notifications to review.
+5. The agent routes sensitive or ambiguous notifications to review, except explicitly opted-in,
+   validated OTP clipboard copying under the narrow policy below.
 6. If local inference is unavailable, the agent falls back to deterministic rules, structured review, or deferred local work that does not durably retain raw notification text.
 
 ## Requirement 5: Calendar Proposal
@@ -219,14 +222,33 @@ Automation; no promotion filtering or source notification cancellation ships.
 memory, battery, and thermal resources; unavailable or constrained states do not fall
 back to deterministic rules) and executes only when the selected enabled Automation is
 configured with `ConfirmationPolicy.AUTOMATICALLY_PERFORM`, schema validation succeeds,
-confidence meets the caller threshold, and `isSensitive` is false. The validated OTP
+confidence meets the caller threshold, and `isSensitive` is false. For OTP analysis, this flag
+indicates unrelated sensitive details; the OTP itself is always sensitive. The code must match
+the only distinct 4–8 character ASCII alphanumeric token containing a digit in the received
+title/body. Invented, partial-token, and multiple-candidate results require review. The validated OTP
 remains transient in memory: `AndroidOtpClipboardWriter` writes it to `ClipboardManager`
 with `ClipDescription.EXTRA_IS_SENSITIVE = true` (`"android.content.extra.IS_SENSITIVE"`)
 so Android 13+ masks the preview overlay, and appends a content-free
-`OTP_COPIED_TO_CLIPBOARD` Activity record only after the platform write succeeds. On
-Android 15+, standard third-party `NotificationListenerService` listeners are subject to
-OS-level sensitive-notification redaction unless `RECEIVE_SENSITIVE_NOTIFICATIONS` is
-granted via developer `appops` or system Enhanced Notifications are disabled.
+`OTP_COPIED_TO_CLIPBOARD` Activity record after the platform write call returns. The adapter rejects input older than
+60 seconds, future timestamps, locked devices, and non-interactive devices. Once a write starts,
+caller cancellation cannot interrupt the bounded five-second audit attempt. Audit failures may
+occur after copying; callers must not retry the clipboard action. Clipboard and Room cannot form
+an atomic transaction, and process death can still leave a write without an audit. Android's write
+API has no acknowledgement; a normal return cannot prove that device policy accepted the write.
+
+Android 15+ may redact OTP content before delivery to an ordinary third-party notification
+listener, regardless of target SDK. NotiMate cannot infer or reconstruct hidden codes. The
+restricted `RECEIVE_SENSITIVE_NOTIFICATIONS` permission is not a user-grantable runtime
+permission; the MVP does not request special roles, privileged grants, or protection bypasses.
+Notification access is separately granted by the user; `POST_NOTIFICATIONS` only authorizes
+NotiMate's own alerts. No SMS, inbox, accessibility, overlay, or clipboard runtime permission
+is required for this adapter. The sensitive clipboard flag masks previews, not access or encryption.
+
+This slice is a foundation, not an enabled end-to-end feature. Production capture still returns
+`PROCESSOR_UNAVAILABLE`. Before activation, integrate explicit opt-in, selected sources/Profile,
+model provisioning and qualification, access/settings revalidation at the write boundary,
+notification update/removal cancellation, and duplicate prevention. No raw retry queue is allowed.
+See [Android OTP support](../../docs/android-otp-support.md) for platform evidence.
 
 Future actions add a typed suggestion, strict payload decoder and response-schema
 branch, policy mapping, and proposal outcome. They retain source/Automation admission,
