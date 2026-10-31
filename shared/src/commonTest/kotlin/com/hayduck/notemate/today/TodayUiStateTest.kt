@@ -62,13 +62,14 @@ class TodayUiStateTest {
             ActivityRecord("third", ActivityEvent.CALENDAR_PROPOSAL_CREATED, 300),
             ActivityRecord("fourth", ActivityEvent.PROPOSAL_DISMISSED, 400),
             ActivityRecord("fifth", ActivityEvent.OPENED_IN_CALENDAR, 500),
-            ActivityRecord("sixth", ActivityEvent.PROPOSAL_DEFERRED, 600),
+            ActivityRecord("sixth", ActivityEvent.OTP_COPIED_TO_CLIPBOARD, 600),
         )
         val results = LocalResults(emptyList(), events)
         val projected = results.toTodayUiState(1_000)
         assertEquals(listOf("sixth", "fifth", "fourth", "third", "tied-a"),
             projected.recentOutcomes.map { it.id })
         assertEquals(ActivityEvent.NOTIFICATION_ACCESS_LOST, projected.recentOutcomes.last().event)
+        assertEquals(ActivityEvent.OTP_COPIED_TO_CLIPBOARD, projected.recentOutcomes.first().event)
         assertEquals(events, results.activity)
     }
 

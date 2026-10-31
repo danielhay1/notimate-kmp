@@ -26,6 +26,9 @@ NotiMate turns transient mobile notifications into structured, private, useful a
 - The agent may ignore low-value notifications automatically when rules are deterministic and explainable.
 - The agent must not automatically create calendar events, reminders, expense records, or provider writes in the MVP without user confirmation.
 - Ambiguous, low-confidence, or sensitive notifications must become review items instead of automatic actions.
+- Explicitly opted-in OTP clipboard copying is the narrow sensitive-data exception: an exact,
+  unambiguous source code must pass schema and policy checks; unrelated sensitive details still
+  require review. Clipboard previews are masked and OTP values are never persisted by NotiMate.
 - Model output is advisory until validated against strict schemas and policy rules.
 
 ## Platform Strategy

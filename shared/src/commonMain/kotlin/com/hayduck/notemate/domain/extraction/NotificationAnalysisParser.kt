@@ -100,6 +100,7 @@ private object SuggestedActionDecoder : DeserializationStrategy<SuggestedNotific
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("SuggestedAction") {
         element<String>("type")
         element("calendar", CalendarOutputDecoder.descriptor)
+        element("otp", OtpOutputDecoder.descriptor)
     }
 
     override fun deserialize(decoder: Decoder): SuggestedNotificationAction {
@@ -107,22 +108,79 @@ private object SuggestedActionDecoder : DeserializationStrategy<SuggestedNotific
         val seen = mutableSetOf<Int>()
         var type = ""
         var calendar: CalendarOutput? = null
+        var otp: OtpOutput? = null
         while (true) {
             val index = composite.decodeElementIndex(descriptor)
             if (index == CompositeDecoder.DECODE_DONE) break
-            if (index !in 0..1 || !seen.add(index)) throw SerializationException("Invalid action.")
+            if (index !in 0..2 || !seen.add(index)) throw SerializationException("Invalid action.")
             when (index) {
                 0 -> type = composite.decodeStringElement(descriptor, index)
                 1 -> calendar = composite.decodeSerializableElement(
                     descriptor, index, CalendarOutputDecoder,
                 )
+                2 -> otp = composite.decodeSerializableElement(
+                    descriptor, index, OtpOutputDecoder,
+                )
             }
         }
         composite.endStructure(descriptor)
-        if (type.isNotEmpty() && type != "calendar_event") throw UnsupportedSuggestedAction()
-        if (seen.size != 2) throw SerializationException("Missing action fields.")
-        val extraction = calendar?.toExtraction()
-            ?: throw SerializationException("Invalid calendar.")
-        return SuggestedNotificationAction.CalendarEvent(extraction)
+        if (0 !in seen) throw SerializationException("Missing action type.")
+        return when (type) {
+            "calendar_event" -> {
+                if (seen != setOf(0, 1)) throw SerializationException("Missing action fields.")
+                val extraction = calendar?.toExtraction()
+                    ?: throw SerializationException("Invalid calendar.")
+                SuggestedNotificationAction.CalendarEvent(extraction)
+            }
+            "otp_code" -> {
+                if (seen != setOf(0, 2)) throw SerializationException("Missing action fields.")
+                val extraction = otp?.toExtraction()
+                    ?: throw SerializationException("Invalid OTP.")
+                SuggestedNotificationAction.OtpCode(extraction)
+            }
+            else -> if (type.isNotEmpty()) {
+                throw UnsupportedSuggestedAction()
+            } else {
+                throw SerializationException("Invalid action type.")
+            }
+        }
+    }
+}
+
+private class OtpOutput(val schema: String, val code: String) {
+    fun toExtraction(): OtpExtraction? =
+        if (schema == "otp.v1") OtpExtraction(code).takeIf { it.isSchemaValid() } else null
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+private object OtpOutputDecoder : DeserializationStrategy<OtpOutput> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("OtpOutput") {
+        element("schema", JsonPrimitive.serializer().descriptor)
+        element("code", JsonPrimitive.serializer().descriptor)
+    }
+
+    override fun deserialize(decoder: Decoder): OtpOutput {
+        val composite = decoder.beginStructure(descriptor)
+        val seen = mutableSetOf<Int>()
+        var schema: String? = null
+        var code: String? = null
+        while (true) {
+            val index = composite.decodeElementIndex(descriptor)
+            if (index == CompositeDecoder.DECODE_DONE) break
+            if (index !in 0..1 || !seen.add(index)) throw SerializationException("Invalid OTP.")
+            val value = composite.decodeSerializableElement(
+                descriptor, index, JsonPrimitive.serializer(),
+            )
+            if (!value.isString) throw SerializationException("OTP fields must be strings.")
+            when (index) {
+                0 -> schema = value.content
+                1 -> code = value.content
+            }
+        }
+        composite.endStructure(descriptor)
+        if (seen.size != 2 || schema == null || code == null) {
+            throw SerializationException("Missing OTP fields.")
+        }
+        return OtpOutput(schema, code)
     }
 }

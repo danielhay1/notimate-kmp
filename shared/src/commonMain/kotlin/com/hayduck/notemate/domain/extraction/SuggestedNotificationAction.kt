@@ -5,4 +5,8 @@ sealed interface SuggestedNotificationAction {
     class CalendarEvent(val calendar: CalendarExtraction) : SuggestedNotificationAction {
         override fun toString(): String = "CalendarEvent([REDACTED])"
     }
+
+    class OtpCode(val otp: OtpExtraction) : SuggestedNotificationAction {
+        override fun toString(): String = "OtpCode([REDACTED])"
+    }
 }

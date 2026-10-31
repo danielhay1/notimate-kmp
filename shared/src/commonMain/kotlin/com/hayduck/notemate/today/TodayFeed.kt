@@ -48,6 +48,7 @@ import note_mate.shared.generated.resources.today_outcome_edited
 import note_mate.shared.generated.resources.today_outcome_expired
 import note_mate.shared.generated.resources.today_outcome_failed
 import note_mate.shared.generated.resources.today_outcome_ignored
+import note_mate.shared.generated.resources.today_outcome_otp_copied
 import note_mate.shared.generated.resources.today_outcome_profile
 import note_mate.shared.generated.resources.today_outcome_validated
 import note_mate.shared.generated.resources.today_pause
@@ -306,6 +307,7 @@ private fun activityLabel(event: ActivityEvent): StringResource = when (event) {
     ActivityEvent.PROPOSAL_EXPIRED -> Res.string.today_outcome_expired
     ActivityEvent.PROPOSAL_VALIDATED -> Res.string.today_outcome_validated
     ActivityEvent.PROPOSAL_EDITED -> Res.string.today_outcome_edited
+    ActivityEvent.OTP_COPIED_TO_CLIPBOARD -> Res.string.today_outcome_otp_copied
     ActivityEvent.NOTIFICATION_IGNORED -> Res.string.today_outcome_ignored
     ActivityEvent.PROFILE_ACTIVATED -> Res.string.today_outcome_profile
     ActivityEvent.NOTIFICATION_ACCESS_LOST -> Res.string.today_outcome_access_lost

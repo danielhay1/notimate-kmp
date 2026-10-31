@@ -13,6 +13,9 @@ class NotificationAnalysisParserTest {
     private val valid = """{"schema":"notification.v1","classification":"POSSIBLE_CALENDAR_EVENT",
         "confidence":0.9,"isSensitive":false,
         "suggestedAction":{"type":"calendar_event","calendar":$calendar}}"""
+    private val validOtp = """{"schema":"notification.v1","classification":"OTP_CODE",
+        "confidence":0.95,"isSensitive":false,
+        "suggestedAction":{"type":"otp_code","otp":{"schema":"otp.v1","code":"482910"}}}"""
 
     @Test
     fun classificationAndTypedActionAreDecodedSeparately() {
@@ -23,6 +26,14 @@ class NotificationAnalysisParserTest {
         assertEquals(0.9, analysis.confidence)
         assertFalse(analysis.toString().contains("Synthetic demo"))
         assertFalse(action.toString().contains("Synthetic demo"))
+
+        val otpAnalysis = assertIs<ExtractionResult.Analysis>(parser.parse(validOtp)).analysis
+        assertEquals(NotificationClassification.OTP_CODE, otpAnalysis.classification)
+        val otpAction = assertIs<SuggestedNotificationAction.OtpCode>(otpAnalysis.suggestedAction)
+        assertEquals(OtpExtraction("482910"), otpAction.otp)
+        assertFalse(otpAnalysis.toString().contains("482910"))
+        assertFalse(otpAction.toString().contains("482910"))
+        assertFalse(otpAction.otp.toString().contains("482910"))
     }
 
     @Test
@@ -71,8 +82,22 @@ class NotificationAnalysisParserTest {
     fun actionClassificationMismatchAndInvalidCalendarAreRejected() {
         listOf(
             noAction("POSSIBLE_CALENDAR_EVENT"),
+            noAction("OTP_CODE"),
             valid.replace("POSSIBLE_CALENDAR_EVENT", "PROMOTIONAL"),
             valid.replace("POSSIBLE_CALENDAR_EVENT", "IGNORED"),
+            valid.replace("POSSIBLE_CALENDAR_EVENT", "OTP_CODE"),
+            validOtp.replace("OTP_CODE", "POSSIBLE_CALENDAR_EVENT"),
+            validOtp.replace("OTP_CODE", "PROMOTIONAL"),
+            validOtp.replace("otp.v1", "otp.v2"),
+            validOtp.replace("\"482910\"", "482910"),
+            validOtp.replace("\"482910\"", "null"),
+            validOtp.replace("482910", "123"),
+            validOtp.replace("482910", "123456789"),
+            validOtp.replace("482910", "ABCD"),
+            validOtp.replace("482910", "12 34"),
+            validOtp.replace("482910", "12-34"),
+            validOtp.replace("\"code\":\"482910\"", "\"code\":\"482910\",\"code\":\"482910\""),
+            validOtp.replace("\"code\":\"482910\"", "\"extra\":\"x\",\"code\":\"482910\""),
             valid.replace("2028-03-01", "2028-02-30"),
             valid.replace("14:30", "24:00"),
             valid.replace("Synthetic demo", "Synthetic\\u0000demo"),

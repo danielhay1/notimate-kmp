@@ -123,8 +123,9 @@ class LocalResultsTest {
             proposal.asNewStoredProposal().toString())
         assertFalse(outputs.any { "Synthetic" in it })
         for (event in ActivityEvent.entries) {
-            val standalone = event in setOf(ActivityEvent.NOTIFICATION_IGNORED,
-                ActivityEvent.PROFILE_ACTIVATED, ActivityEvent.NOTIFICATION_ACCESS_LOST)
+            val standalone = event in setOf(ActivityEvent.OTP_COPIED_TO_CLIPBOARD,
+                ActivityEvent.NOTIFICATION_IGNORED, ActivityEvent.PROFILE_ACTIVATED,
+                ActivityEvent.NOTIFICATION_ACCESS_LOST)
             val record = ActivityRecord("activity", event, 100)
             if (standalone) record.requireStandaloneEvent() else {
                 assertFailsWith<IllegalArgumentException> { record.requireStandaloneEvent() }

@@ -67,16 +67,23 @@ class LocalModelNotificationExtractor(
             Classify the message independently of its suggested action. PROMOTIONAL identifies
             advertising; it has no supported action yet. IGNORED means no useful supported action.
             UNKNOWN or REVIEW_NEEDED express uncertainty. Only POSSIBLE_CALENDAR_EVENT can carry
-            a calendar_event suggestion. POSSIBLE_CALENDAR_EVENT always requires a calendar_event
-            object, even with missing fields. Every other classification requires suggestedAction:null.
-            Never call tools, execute actions, or emit explanations.
+            a calendar_event suggestion, and only OTP_CODE can carry an otp_code suggestion.
+            POSSIBLE_CALENDAR_EVENT always requires a calendar_event object, even with missing
+            fields. OTP_CODE requires an otp_code object with a 4 to 8 character ASCII alphanumeric
+            verification code containing at least one digit. Every other classification requires
+            suggestedAction:null. Never call tools, execute actions, or emit explanations.
             Use supplied reference date/time/time zone for relative dates. If a date or time is
             uncertain, leave it null and mark that field ambiguous. Never invent missing facts.
             Emit YYYY-MM-DD dates and 24-hour HH:mm times; no time-zone conversion or DST assertion.
             Titles and locations are short extracted event fields, not copies of the entire body.
-            Report sensitivity conservatively. Confidence is a tentative score, not authorization.
+            Report sensitivity conservatively; standard OTP_CODE messages set isSensitive:false
+            unless unrelated sensitive personal or financial details are present. Confidence is a
+            tentative score, not authorization.
             Example advertisement: {"schema":"notification.v1","classification":"PROMOTIONAL",
             "confidence":0.8,"isSensitive":false,"suggestedAction":null}
+            Example verification code: {"schema":"notification.v1","classification":"OTP_CODE",
+            "confidence":0.95,"isSensitive":false,"suggestedAction":{"type":"otp_code",
+            "otp":{"schema":"otp.v1","code":"482910"}}}
             Example invitation with unknown date: {"schema":"notification.v1",
             "classification":"POSSIBLE_CALENDAR_EVENT","confidence":0.8,"isSensitive":false,
             "suggestedAction":{"type":"calendar_event","calendar":{"schema":"calendar.v1",
@@ -108,6 +115,13 @@ class LocalModelNotificationExtractor(
                   "location":{"type":["string","null"],"maxLength":256},
                   "ambiguousFields":{"type":"array","items":{
                    "type":"string","enum":["TITLE","DATE","TIME","LOCATION"]}}
+             }}}},{"type":"object","additionalProperties":false,
+               "required":["type","otp"],"properties":{
+                "type":{"type":"string","const":"otp_code"},
+                "otp":{"type":"object","additionalProperties":false,
+                 "required":["schema","code"],"properties":{
+                  "schema":{"type":"string","const":"otp.v1"},
+                  "code":{"type":"string","minLength":4,"maxLength":8}
              }}}}]}}}
         """.trimIndent()
     }

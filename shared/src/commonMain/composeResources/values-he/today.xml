@@ -71,6 +71,7 @@
     <string name="today_outcome_expired">פג תוקף ההצעה</string>
     <string name="today_outcome_validated">ההצעה אומתה</string>
     <string name="today_outcome_edited">שדות ההצעה נערכו</string>
+    <string name="today_outcome_otp_copied">קוד הועתק ללוח</string>
     <string name="today_outcome_ignored">המערכת התעלמה מההתראה</string>
     <string name="today_outcome_profile">הפרופיל הופעל</string>
     <string name="today_outcome_access_lost">הגישה להתראות אבדה</string>

@@ -3,6 +3,7 @@ package com.hayduck.notemate.domain.agent
 enum class AgentOutcome {
     IGNORE,
     DRAFT,
+    AUTOMATIC_ACTION,
     REVIEW,
     CONFIRM_AND_WRITE,
     DEFER,

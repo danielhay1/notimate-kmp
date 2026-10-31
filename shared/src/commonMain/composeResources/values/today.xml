@@ -71,6 +71,7 @@
     <string name="today_outcome_expired">Proposal expired</string>
     <string name="today_outcome_validated">Proposal validated</string>
     <string name="today_outcome_edited">Proposal fields edited</string>
+    <string name="today_outcome_otp_copied">Code copied to clipboard</string>
     <string name="today_outcome_ignored">Notification ignored</string>
     <string name="today_outcome_profile">Profile activated</string>
     <string name="today_outcome_access_lost">Notification Access lost</string>

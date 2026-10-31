@@ -50,10 +50,12 @@ sealed interface NotificationSourceSelector {
 
 enum class AutomationAction {
     PROPOSE_CALENDAR_EVENT,
+    COPY_OTP_TO_CLIPBOARD,
     IGNORE,
     GROUP_FOR_REVIEW,
 }
 
 enum class ConfirmationPolicy {
     ALWAYS_REVIEW,
+    AUTOMATICALLY_PERFORM,
 }

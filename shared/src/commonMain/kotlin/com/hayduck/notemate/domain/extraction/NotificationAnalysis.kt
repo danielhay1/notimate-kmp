@@ -23,5 +23,9 @@ internal fun NotificationAnalysis.isSchemaValid(): Boolean = when (val action = 
     is SuggestedNotificationAction.CalendarEvent ->
         classification == NotificationClassification.POSSIBLE_CALENDAR_EVENT &&
             action.calendar.isSchemaValid()
-    null -> classification != NotificationClassification.POSSIBLE_CALENDAR_EVENT
+    is SuggestedNotificationAction.OtpCode ->
+        classification == NotificationClassification.OTP_CODE &&
+            action.otp.isSchemaValid()
+    null -> classification != NotificationClassification.POSSIBLE_CALENDAR_EVENT &&
+        classification != NotificationClassification.OTP_CODE
 }

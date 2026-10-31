@@ -75,7 +75,8 @@ val ProposalChange.activityEvent: ActivityEvent
 
 /** Standalone events cannot impersonate a proposal lifecycle mutation. */
 fun ActivityRecord.requireStandaloneEvent() {
-    require(event in setOf(ActivityEvent.NOTIFICATION_IGNORED, ActivityEvent.PROFILE_ACTIVATED,
+    require(event in setOf(ActivityEvent.OTP_COPIED_TO_CLIPBOARD,
+        ActivityEvent.NOTIFICATION_IGNORED, ActivityEvent.PROFILE_ACTIVATED,
         ActivityEvent.NOTIFICATION_ACCESS_LOST) && proposalId == null) {
         "Proposal activity requires an atomic lifecycle command."
     }
