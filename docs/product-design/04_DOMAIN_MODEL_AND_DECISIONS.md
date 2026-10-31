@@ -100,6 +100,7 @@ Free-text values are sensitive local configuration by default.
 Initial action types:
 
 - Propose a calendar event.
+- Copy a local-LLM-verified OTP code to the device clipboard (marked sensitive, with content-free Activity logging and no persistent OTP storage).
 - Ignore or reduce attention for a notification.
 - Group a structured result for review.
 
@@ -107,15 +108,15 @@ The MVP action engine must not allow model output to call a platform side effect
 
 ## Confirmation policy
 
-MVP value:
+MVP values:
 
-- `AlwaysReview`
+- `AlwaysReview` (default; required for external provider writes such as calendar proposals).
+- `AutomaticallyPerform` (supported for local-LLM OTP clipboard copy when configured on a `CopyOtpToClipboard` Automation).
 
 Future candidates:
 
 - `ReviewWhenUncertain`
 - `ConfirmFromNotification`
-- `AutomaticallyPerform`
 
 Future policies require separate product, permission, risk, and audit design.
 

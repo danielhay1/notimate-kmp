@@ -3,6 +3,7 @@ package com.hayduck.notemate.domain.agent
 import com.hayduck.notemate.domain.automation.Automation
 import com.hayduck.notemate.domain.automation.AutomationAction
 import com.hayduck.notemate.domain.automation.AutomationProfiles
+import com.hayduck.notemate.domain.automation.ConfirmationPolicy
 import com.hayduck.notemate.domain.notification.NotificationClassification
 import com.hayduck.notemate.domain.notification.NotificationSource
 
@@ -82,7 +83,24 @@ class AgentPolicy(private val minimumConfidence: Double) {
             NotificationClassification.REVIEW_NEEDED -> AgentOutcome.REVIEW
             NotificationClassification.IGNORED -> AgentOutcome.IGNORE
             NotificationClassification.POSSIBLE_CALENDAR_EVENT -> when (automation.action) {
-                AutomationAction.PROPOSE_CALENDAR_EVENT -> AgentOutcome.DRAFT
+                AutomationAction.PROPOSE_CALENDAR_EVENT ->
+                    if (automation.confirmationPolicy == ConfirmationPolicy.ALWAYS_REVIEW) {
+                        AgentOutcome.DRAFT
+                    } else {
+                        AgentOutcome.REVIEW
+                    }
+                AutomationAction.COPY_OTP_TO_CLIPBOARD -> AgentOutcome.REVIEW
+                AutomationAction.IGNORE -> AgentOutcome.IGNORE
+                AutomationAction.GROUP_FOR_REVIEW -> AgentOutcome.REVIEW
+            }
+            NotificationClassification.OTP_CODE -> when (automation.action) {
+                AutomationAction.COPY_OTP_TO_CLIPBOARD ->
+                    if (automation.confirmationPolicy == ConfirmationPolicy.AUTOMATICALLY_PERFORM) {
+                        AgentOutcome.AUTOMATIC_ACTION
+                    } else {
+                        AgentOutcome.REVIEW
+                    }
+                AutomationAction.PROPOSE_CALENDAR_EVENT -> AgentOutcome.REVIEW
                 AutomationAction.IGNORE -> AgentOutcome.IGNORE
                 AutomationAction.GROUP_FOR_REVIEW -> AgentOutcome.REVIEW
             }

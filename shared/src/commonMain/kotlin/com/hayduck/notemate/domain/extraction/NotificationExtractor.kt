@@ -24,6 +24,13 @@ class CalendarExtraction(
     override fun toString(): String = "CalendarExtraction([REDACTED])"
 }
 
+/** Advisory one-time verification code; must pass schema and policy validation before copy. */
+class OtpExtraction(val code: String) {
+    override fun equals(other: Any?): Boolean = other is OtpExtraction && code == other.code
+    override fun hashCode(): Int = code.hashCode()
+    override fun toString(): String = "OtpExtraction([REDACTED])"
+}
+
 sealed interface ExtractionResult {
     data class Analysis(val analysis: NotificationAnalysis) : ExtractionResult
     data class Calendar(val extraction: CalendarExtraction) : ExtractionResult
@@ -51,6 +58,8 @@ enum class ExtractionReviewReason {
 internal const val MAXIMUM_NOTIFICATION_TITLE_LENGTH = 256
 internal const val MAXIMUM_NOTIFICATION_BODY_LENGTH = 4096
 internal const val MAXIMUM_EXTRACTED_TEXT_LENGTH = 256
+internal const val MINIMUM_OTP_CODE_LENGTH = 4
+internal const val MAXIMUM_OTP_CODE_LENGTH = 8
 internal const val MAXIMUM_MODEL_OUTPUT_LENGTH = 8192
 
 internal fun ObservedNotification.isWithinExtractionLimits(): Boolean =
@@ -62,3 +71,20 @@ internal fun CalendarExtraction.isSchemaValid(): Boolean =
         text == null || (text.isNotBlank() && text.length <= MAXIMUM_EXTRACTED_TEXT_LENGTH &&
             text.none { it.isISOControl() })
     }
+
+/** Rejects invented, partial-token, and multiple distinct code candidates in received content. */
+internal fun OtpExtraction.matchesSource(notification: ObservedNotification): Boolean {
+    val candidates = listOfNotNull(notification.content.title, notification.content.body)
+        .flatMap { text ->
+            text.map { if (it.isLetterOrDigit() || it == '_') it else ' ' }
+                .joinToString("").split(' ')
+        }
+        .filter { OtpExtraction(it).isSchemaValid() }
+        .toSet()
+    return candidates == setOf(code)
+}
+
+internal fun OtpExtraction.isSchemaValid(): Boolean =
+    code.length in MINIMUM_OTP_CODE_LENGTH..MAXIMUM_OTP_CODE_LENGTH &&
+        code.all { it in '0'..'9' || it in 'A'..'Z' || it in 'a'..'z' } &&
+        code.any { it in '0'..'9' }

@@ -1,10 +1,12 @@
 package com.hayduck.notemate.domain.extraction
 
+import com.hayduck.notemate.domain.activity.ActivityEvent
 import com.hayduck.notemate.domain.agent.AgentPolicy
 import com.hayduck.notemate.domain.automation.Automation
 import com.hayduck.notemate.domain.automation.AutomationAction
 import com.hayduck.notemate.domain.automation.AutomationProfile
 import com.hayduck.notemate.domain.automation.AutomationProfiles
+import com.hayduck.notemate.domain.automation.ConfirmationPolicy
 import com.hayduck.notemate.domain.automation.NotificationSourceSelector
 import com.hayduck.notemate.domain.configuration.LocalConfiguration
 import com.hayduck.notemate.domain.notification.CaptureResult
@@ -24,6 +26,7 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlinx.coroutines.test.runTest
 
@@ -267,6 +270,60 @@ class NotificationExtractionPipelineTest {
         assertEquals(review(ExtractionReviewReason.INVALID_OUTPUT), process(invalid))
     }
 
+    @Test
+    fun otpClipboardActionRequiresLocalModelAndNeverFallsBackToRules() = runTest {
+        val otpConfig = configuration(
+            action = AutomationAction.COPY_OTP_TO_CLIPBOARD,
+            confirmationPolicy = ConfirmationPolicy.AUTOMATICALLY_PERFORM,
+        )
+        val otpModel = adapter(true) {
+            ExtractionResult.Analysis(NotificationAnalysis(
+                NotificationClassification.OTP_CODE,
+                SuggestedNotificationAction.OtpCode(OtpExtraction("482910")),
+                0.95,
+                false,
+            ))
+        }
+        val otpInput = notification.copy(content = NotificationContent("Verification", "482910"))
+        val outcome = assertIs<NotificationExtractionOutcome.OtpClipboard>(
+            process(otpModel, config = otpConfig, input = otpInput),
+        )
+        assertEquals("482910", outcome.copy.code)
+        listOf("No code here", "14829100", "482910 and 773216", "prefix482910").forEach { body ->
+            assertEquals(review(ExtractionReviewReason.INVALID_OUTPUT),
+                process(otpModel, config = otpConfig,
+                    input = notification.copy(content = NotificationContent(null, body))))
+        }
+        assertEquals("personal", outcome.copy.origin.profileId)
+        assertEquals("calendar", outcome.copy.origin.automationId)
+        assertFalse(outcome.toString().contains("482910"))
+        assertFalse(outcome.copy.toString().contains("482910"))
+        val activity = outcome.copy.activityRecord("otp-activity")
+        assertEquals(ActivityEvent.OTP_COPIED_TO_CLIPBOARD, activity.event)
+        assertEquals(null, activity.proposalId)
+        assertFalse(activity.toString().contains("482910"))
+
+        assertEquals(review(ExtractionReviewReason.LOCAL_AI_UNAVAILABLE),
+            process(rules, config = otpConfig))
+        assertEquals(review(ExtractionReviewReason.LOCAL_AI_UNAVAILABLE),
+            process(otpModel, config = otpConfig, ai = LocalAiState.UNAVAILABLE))
+        assertEquals(
+            NotificationExtractionOutcome.Deferred(ExtractionDeferralReason.DEVICE_CONSTRAINED),
+            process(otpModel, config = otpConfig,
+                device = available.copy(battery = DeviceResourceState.CONSTRAINED)),
+        )
+        val timedOut = adapter(true) {
+            ExtractionResult.Unavailable(ExtractionReviewReason.INFERENCE_TIMED_OUT)
+        }
+        assertEquals(review(ExtractionReviewReason.INFERENCE_TIMED_OUT),
+            process(timedOut, config = otpConfig))
+        assertEquals(review(ExtractionReviewReason.POLICY_REVIEW),
+            process(otpModel, config = configuration(
+                action = AutomationAction.COPY_OTP_TO_CLIPBOARD,
+                confirmationPolicy = ConfirmationPolicy.ALWAYS_REVIEW,
+            )))
+    }
+
     private suspend fun process(
         extractor: NotificationExtractor,
         config: LocalConfiguration? = configuration(),
@@ -281,13 +338,15 @@ class NotificationExtractionPipelineTest {
     private fun configuration(
         enabled: Boolean = true,
         action: AutomationAction = AutomationAction.PROPOSE_CALENDAR_EVENT,
+        confirmationPolicy: ConfirmationPolicy = ConfirmationPolicy.ALWAYS_REVIEW,
         exclusions: Set<NotificationClassification> = emptySet(),
     ): LocalConfiguration = LocalConfiguration(AutomationProfiles(listOf(
         AutomationProfile("personal", "Personal", automations = listOf(Automation("calendar",
             "Calendar", enabled, NotificationSourceSelector.AnyMonitoredApplication, action,
-            exclusions = exclusions))),
+            confirmationPolicy = confirmationPolicy, exclusions = exclusions))),
         AutomationProfile("other", "Other", automations = listOf(Automation("other-calendar",
-            "Other", true, NotificationSourceSelector.Application("other.app"), action))),
+            "Other", true, NotificationSourceSelector.Application("other.app"), action,
+            confirmationPolicy = confirmationPolicy))),
     ), "personal"), setOf(source.applicationId), false)
 
     private fun adapter(

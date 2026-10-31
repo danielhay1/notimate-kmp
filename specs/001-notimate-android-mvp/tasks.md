@@ -59,6 +59,7 @@ Implementation and validation evidence belong in packet `007`.
 - [x] Add memory/battery/thermal gate contract before heavy extraction.
 - [x] Model ready, downloadable, downloading, unavailable, and unsupported local-AI states.
 - [x] Add asynchronous local inference and a strict classification/action envelope.
+- [x] Add local-LLM `OTP_CODE` (`otp.v1`) extraction, `COPY_OTP_TO_CLIPBOARD` policy routing, and sensitive Android clipboard copy with content-free Activity recording.
 - [x] Add the Android LiteRT-LM adapter, explicit resource probes, and provisioned-model checks.
 - [ ] Qualify a model and target device for inference quality, privacy, latency, and memory.
 

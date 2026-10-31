@@ -4,6 +4,7 @@ import com.hayduck.notemate.domain.automation.Automation
 import com.hayduck.notemate.domain.automation.AutomationAction
 import com.hayduck.notemate.domain.automation.AutomationProfile
 import com.hayduck.notemate.domain.automation.AutomationProfiles
+import com.hayduck.notemate.domain.automation.ConfirmationPolicy
 import com.hayduck.notemate.domain.automation.NotificationSourceSelector
 import com.hayduck.notemate.domain.notification.NotificationClassification
 import com.hayduck.notemate.domain.notification.NotificationSource
@@ -104,6 +105,60 @@ class AgentPolicyTest {
         assertEquals(AgentOutcome.IGNORE, policy.evaluate(
             source, setOf(source.applicationId), false, configured,
             safe.copy(classification = NotificationClassification.UNKNOWN, isSensitive = true),
+        ))
+    }
+
+    @Test
+    fun otpClipboardActionRequiresAutomaticPolicyAndHighConfidenceNonSensitiveModelOutput() {
+        val otpAutomation = Automation(
+            id = "otp",
+            name = "Copy OTP",
+            isEnabled = true,
+            sourceSelector = NotificationSourceSelector.AnyMonitoredApplication,
+            action = AutomationAction.COPY_OTP_TO_CLIPBOARD,
+            confirmationPolicy = ConfirmationPolicy.AUTOMATICALLY_PERFORM,
+            conditions = setOf(NotificationClassification.OTP_CODE),
+        )
+        val otpInput = AgentPolicyInput(
+            classification = NotificationClassification.OTP_CODE,
+            confidence = 0.95,
+            isSchemaValid = true,
+            requiresLocalInference = true,
+        )
+        assertEquals(AgentOutcome.AUTOMATIC_ACTION, policy.evaluate(
+            source, setOf(source.applicationId), false, otpAutomation, otpInput,
+        ))
+        listOf(
+            otpInput.copy(confidence = 0.7),
+            otpInput.copy(isSensitive = true),
+            otpInput.copy(isSchemaValid = false),
+            otpInput.copy(isLocalInferenceAvailable = false),
+        ).forEach {
+            assertEquals(AgentOutcome.REVIEW, policy.evaluate(
+                source, setOf(source.applicationId), false, otpAutomation, it,
+            ))
+        }
+        assertEquals(AgentOutcome.DEFER, policy.evaluate(
+            source, setOf(source.applicationId), false, otpAutomation,
+            otpInput.copy(isDeviceConstrained = true),
+        ))
+        val reviewOtp = Automation(
+            "otp-review", "Review OTP", true,
+            NotificationSourceSelector.AnyMonitoredApplication,
+            AutomationAction.COPY_OTP_TO_CLIPBOARD,
+            confirmationPolicy = ConfirmationPolicy.ALWAYS_REVIEW,
+        )
+        assertEquals(AgentOutcome.REVIEW, policy.evaluate(
+            source, setOf(source.applicationId), false, reviewOtp, otpInput,
+        ))
+        val autoCalendar = Automation(
+            "auto-calendar", "Auto Calendar", true,
+            NotificationSourceSelector.AnyMonitoredApplication,
+            AutomationAction.PROPOSE_CALENDAR_EVENT,
+            confirmationPolicy = ConfirmationPolicy.AUTOMATICALLY_PERFORM,
+        )
+        assertEquals(AgentOutcome.REVIEW, policy.evaluate(
+            source, setOf(source.applicationId), false, autoCalendar, safe,
         ))
     }
 
