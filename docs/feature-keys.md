@@ -59,8 +59,9 @@ private visibility, a content-free lock-screen preview, and a tap action that op
 the normal app. Each send replaces the previous test notification.
 
 The sender rechecks the feature key at posting time. Its Activity, native sender,
-resources, launcher editor Activity, and notification permission are in Android's
-debug source set; release builds have the normal launcher and no test sender.
+resources, and launcher editor Activity are in Android's debug source set; release
+builds have the normal launcher and no test sender. Task `009` declares the outgoing
+notification permission in the main manifest for normal-app permission onboarding.
 The shared feature editor works on iOS, but native notification testing is Android
 only in this slice.
 

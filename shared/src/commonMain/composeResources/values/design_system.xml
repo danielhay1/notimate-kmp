@@ -6,7 +6,7 @@
     <string name="processing_permission_body">NotiMate cannot analyze new notifications until access is enabled.</string>
     <string name="processing_settings">Open Android settings</string>
     <string name="processing_degraded">Some smart features are unavailable</string>
-    <string name="processing_unavailable">Processing is temporarily unavailable</string>
+    <string name="processing_unavailable">Processing is unavailable</string>
     <string name="resume">Resume</string>
     <string name="use_basic_processing">Use basic processing</string>
     <string name="try_again">Try again</string>
@@ -34,4 +34,6 @@
     <string name="preview_expired">This proposal is no longer actionable because its explicit deadline has passed.</string>
     <string name="preview_degraded">On-device AI is unavailable. Supported rules remain available through basic processing.</string>
     <string name="preview_unavailable">Processing cannot complete while the device is under pressure. Try again later.</string>
+    <string name="proposal_draft">Draft</string>
+    <string name="preview_draft">Structured fields are saved, but validation is incomplete.</string>
 </resources>

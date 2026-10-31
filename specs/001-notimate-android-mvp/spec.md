@@ -299,6 +299,39 @@ builds it gates a manual title/body notification form and native posting. Permis
 requests occur on Send; denied or blocked notifications expose settings/retry. Posted
 notifications hide input in lock-screen public previews and open the normal app on
 tap. Form content is transient and validation uses synthetic input. The Android
-sender and its permission are absent from release. iOS shares keys and the debug
+sender is absent from release. Task `009` adds the normal-app alert permission
+declaration and contextual education. iOS shares keys and the debug
 editor but has no native sender in this slice. Own-package capture filtering and
 fail-closed production extraction remain unchanged. See `docs/feature-keys.md`.
+
+## Task 009 Permission And Today Core
+
+The approved first slice implements Android privacy/permission education and a
+repository-backed Today feed. Onboarding step, prior verified Notification Access,
+and outgoing-alert request history are stored locally outside automatic backup.
+Current grants are verified from Android after settings return and on foreground
+entry; stored history distinguishes revoked access without inventing a grant.
+Declining access or alerts never deletes configuration or results. Contextual alert
+requests are separate from listener access and do not enable processing or delivery.
+
+Today shows the selected Profile, source and enabled-Automation counts, global pause
+preference, stored structured proposals, and the latest five content-free Activity
+outcomes. The presentation limit does not change retention. Dismissed/handed-off
+proposals are excluded from the queue. Explicit expiry deadlines change display
+without mutating storage or generating events. Other saved proposals are view-only
+until task `010`; no lifecycle action or Calendar handoff is implemented here.
+
+Configuration and results load/fail/retry independently. Existing results remain
+accessible when Notification Access or alert permission is lost. Processing stays
+unavailable because production capture is still gated, even with grants and an
+unpaused preference. No claim of running basic extraction, model readiness, download,
+automatic retry, or proposal delivery is made. The actual repository starter Profile
+is displayed; additional example automations and monitored sources are not seeded.
+
+Shared stateless UI supports English/Hebrew RTL, both themes, large text, and readable
+window-based sizing. Android owns lifecycle, permissions, settings launchers, local
+progress storage, and locale-aware date/time display. iOS retains its existing host
+and developer startup; it does not gain Android-equivalent notification access.
+Monitored-source selection and remaining canonical onboarding are later task `009`
+slices. Profile switching/management remains task `011`; full primary navigation,
+Activity, and Settings follow their working destinations rather than placeholder tabs.

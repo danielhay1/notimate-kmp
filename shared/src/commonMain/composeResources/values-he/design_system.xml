@@ -34,4 +34,6 @@
     <string name="preview_expired">לא ניתן לבצע פעולה בהצעה כי המועד שהוגדר לתוקפה כבר עבר.</string>
     <string name="preview_degraded">הבינה המלאכותית במכשיר אינה זמינה. כללים נתמכים עדיין זמינים בעיבוד בסיסי.</string>
     <string name="preview_unavailable">לא ניתן להשלים עיבוד כאשר המכשיר תחת עומס. ניתן לנסות שוב מאוחר יותר.</string>
+    <string name="proposal_draft">טיוטה</string>
+    <string name="preview_draft">השדות המובנים נשמרו, אך האימות עדיין לא הושלם.</string>
 </resources>

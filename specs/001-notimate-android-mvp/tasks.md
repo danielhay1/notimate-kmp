@@ -84,9 +84,9 @@ Observed validation and accessibility limits belong in packet `004`.
 
 ## Phase 5: Permission And Proposal UI
 
-- [ ] Build Notification Access education, system-settings handoff, and verification.
-- [ ] Build in-context `POST_NOTIFICATIONS` education and request.
-- [ ] Build Today with processing state, active Profile, proposal queue, and recent outcomes.
+- [x] Build Notification Access education, system-settings handoff, and verification.
+- [x] Build in-context `POST_NOTIFICATIONS` education and request.
+- [x] Build Today with processing state, selected Profile, read-only proposal queue, and recent outcomes.
 - [ ] Build Proposal Detail with editable calendar fields and ambiguity guidance.
 - [ ] Post standard Android proposal notifications with `Review` and `Dismiss`.
 - [ ] Deep link notification body and `Review` directly to Proposal Detail with a normal back stack.
@@ -94,6 +94,12 @@ Observed validation and accessibility limits belong in packet `004`.
 - [ ] Integrate reviewed proposals with Android Calendar through `ACTION_INSERT`.
 - [ ] Use `Opened in Calendar` unless event creation is verifiably completed.
 - [ ] Add recoverable error handling for missing Calendar handlers and failed handoffs.
+
+Task `009` delivers the approved permission/Today core only. Monitored-source
+selection and remaining canonical onboarding are later slices. Production processing
+and proposal alerts remain unavailable. The queue has no lifecycle or Calendar
+actions until task `010`; permission loss never clears it. Full navigation exposes
+additional destinations only when their feature slices are implemented.
 
 ## Phase 6: Profiles And Automations
 

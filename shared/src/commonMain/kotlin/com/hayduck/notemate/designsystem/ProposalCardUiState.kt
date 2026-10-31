@@ -20,7 +20,7 @@ class ProposalCardUiState(
     override fun toString(): String = "ProposalCardUiState(status=$status, content=[REDACTED])"
 }
 
-enum class ProposalCardStatus { NEEDS_REVIEW, READY, DEFERRED, FAILED, EXPIRED }
+enum class ProposalCardStatus { DRAFT, NEEDS_REVIEW, READY, DEFERRED, FAILED, EXPIRED }
 
 /** Requests a caller-owned action; rendering a card never changes a Proposal or opens Calendar. */
 enum class ProposalCardAction { REVIEW, DISMISS, RETRY }

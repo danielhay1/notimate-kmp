@@ -13,6 +13,8 @@ import com.hayduck.notemate.domain.results.LocalResultsRepository
 import com.hayduck.notemate.featurekeys.FeatureKeyManager
 import com.hayduck.notemate.featurekeys.createFeatureKeyManager
 import com.hayduck.notemate.notification.CaptureSettingsObserver
+import com.hayduck.notemate.permissions.AndroidOnboardingStore
+import com.hayduck.notemate.today.OnboardingStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -26,10 +28,13 @@ class NotiMateApplication : Application() {
         private set
     internal lateinit var captureCoordinator: NotificationCaptureCoordinator
         private set
+    internal lateinit var onboardingStore: OnboardingStore
+        private set
 
     override fun onCreate() {
         super.onCreate()
         featureKeys = createFeatureKeyManager(this)
+        onboardingStore = AndroidOnboardingStore(this)
         configurationRepository = RoomLocalConfigurationRepository(
             LocalConfigurationDatabase.create(this),
         )

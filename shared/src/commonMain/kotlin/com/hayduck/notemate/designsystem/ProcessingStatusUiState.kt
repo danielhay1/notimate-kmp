@@ -11,7 +11,7 @@ sealed interface ProcessingStatusUiState {
     data class Degraded(val explanation: String) : ProcessingStatusUiState
     data class Unavailable(
         val explanation: String,
-        val recovery: ProcessingRecovery,
+        val recovery: ProcessingRecovery? = null,
     ) : ProcessingStatusUiState
 }
 

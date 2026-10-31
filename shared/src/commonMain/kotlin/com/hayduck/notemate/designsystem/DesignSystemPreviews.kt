@@ -22,6 +22,7 @@ import note_mate.shared.generated.resources.Res
 import note_mate.shared.generated.resources.preview_automation
 import note_mate.shared.generated.resources.preview_deferred
 import note_mate.shared.generated.resources.preview_degraded
+import note_mate.shared.generated.resources.preview_draft
 import note_mate.shared.generated.resources.preview_expired
 import note_mate.shared.generated.resources.preview_failed
 import note_mate.shared.generated.resources.preview_needs_review
@@ -150,6 +151,7 @@ private fun ProposalPreviewStates() {
                 automationName = stringResource(Res.string.preview_automation),
                 status = status,
                 explanation = stringResource(when (status) {
+                    ProposalCardStatus.DRAFT -> Res.string.preview_draft
                     ProposalCardStatus.NEEDS_REVIEW -> Res.string.preview_needs_review
                     ProposalCardStatus.READY -> Res.string.preview_ready
                     ProposalCardStatus.DEFERRED -> Res.string.preview_deferred

@@ -1,14 +1,11 @@
 package com.hayduck.notemate.notification
 
-import android.app.NotificationManager
-import android.content.ComponentName
-import android.os.Build
-import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.hayduck.notemate.NotiMateApplication
 import com.hayduck.notemate.domain.notification.NotificationCaptureCoordinator
 import com.hayduck.notemate.domain.notification.NotificationSource
+import com.hayduck.notemate.permissions.hasNotificationAccess
 
 class NotiMateNotificationListenerService : NotificationListenerService() {
     private lateinit var coordinator: NotificationCaptureCoordinator
@@ -20,21 +17,21 @@ class NotiMateNotificationListenerService : NotificationListenerService() {
     }
 
     override fun onListenerConnected() {
-        coordinator.updateConnection(isConnected = true, hasAccess = hasNotificationAccess())
+        coordinator.updateConnection(isConnected = true, hasAccess = hasNotificationAccess(this))
     }
 
     override fun onListenerDisconnected() {
-        coordinator.updateConnection(isConnected = false, hasAccess = hasNotificationAccess())
+        coordinator.updateConnection(isConnected = false, hasAccess = hasNotificationAccess(this))
     }
 
     override fun onDestroy() {
-        coordinator.updateConnection(isConnected = false, hasAccess = hasNotificationAccess())
+        coordinator.updateConnection(isConnected = false, hasAccess = hasNotificationAccess(this))
         super.onDestroy()
     }
 
     override fun onNotificationPosted(notification: StatusBarNotification?) {
         if (notification == null) return
-        if (!hasNotificationAccess()) {
+        if (!hasNotificationAccess(this)) {
             coordinator.updateConnection(isConnected = false, hasAccess = false)
             return
         }
@@ -43,17 +40,6 @@ class NotiMateNotificationListenerService : NotificationListenerService() {
         coordinator.capture(NotificationSource(applicationId), notification.postTime) {
             val extras = notification.notification.extras
             mapper.map(extras::getCharSequence)
-        }
-    }
-
-    private fun hasNotificationAccess(): Boolean {
-        val component = ComponentName(this, NotiMateNotificationListenerService::class.java)
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            getSystemService(NotificationManager::class.java)
-                .isNotificationListenerAccessGranted(component)
-        } else {
-            Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
-                ?.split(':')?.any { ComponentName.unflattenFromString(it) == component } == true
         }
     }
 }

@@ -161,3 +161,8 @@ retry/dismiss for failed state, and no lifecycle actions for expired state. Doma
 validation remains mandatory in future action handlers. Deferred content does not
 promise scheduled retries. Production integration and destination state mapping
 are not part of this slice.
+
+Task `009` adds a Draft card state and an explicit informational card mode with no
+lifecycle controls. Unavailable processing can omit a recovery action when none
+exists. Its permission panels, safe Activity rows, empty state, and privacy indicator
+ship with the permission/Today core; remaining inventory follows its owning screens.
